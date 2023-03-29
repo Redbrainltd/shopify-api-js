@@ -92,23 +92,25 @@ export function register(
       delete existingHandlers[topic];
     }
 
+//     ** REDBRAIN PATCH ** disable removal of existing webhooks
+    
     // Delete any leftover handlers
-    for (const topic in existingHandlers) {
-      if (!Object.prototype.hasOwnProperty.call(existingHandlers, topic)) {
-        continue;
-      }
+//     for (const topic in existingHandlers) {
+//       if (!Object.prototype.hasOwnProperty.call(existingHandlers, topic)) {
+//         continue;
+//       }
 
-      const GraphqlClient = graphqlClientClass({config});
-      const client = new GraphqlClient({session});
+//       const GraphqlClient = graphqlClientClass({config});
+//       const client = new GraphqlClient({session});
 
-      registerReturn[topic] = await runMutations({
-        config,
-        client,
-        topic,
-        handlers: existingHandlers[topic],
-        operation: WebhookOperation.Delete,
-      });
-    }
+//       registerReturn[topic] = await runMutations({
+//         config,
+//         client,
+//         topic,
+//         handlers: existingHandlers[topic],
+//         operation: WebhookOperation.Delete,
+//       });
+//     }
 
     return registerReturn;
   };
