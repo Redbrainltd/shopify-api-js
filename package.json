@@ -1,5 +1,5 @@
 {
-  "name": "@redbrainduncan/shopify-api",
+  "name": "@shopify/shopify-api",
   "version": "6.2.0",
   "description": "Shopify API Library for Node - accelerate development with support for authentication, graphql proxy, webhooks",
   "main": "./lib/index.js",
@@ -53,7 +53,6 @@
     "type": "git",
     "url": "git+https://github.com/redbrainduncan/shopify-api-js.git"
   },
-
   "keywords": [
     "shopify",
     "node",
