@@ -2,14 +2,14 @@ import {
   graphqlClientClass,
   GraphqlClient,
 } from '../clients/graphql/graphql_client';
-import {InvalidDeliveryMethodError, ShopifyError} from '../error';
-import {logger} from '../logger';
-import {gdprTopics} from '../types';
-import {ConfigInterface} from '../base-types';
-import {Session} from '../session/session';
+import { InvalidDeliveryMethodError, ShopifyError } from '../error';
+import { logger } from '../logger';
+import { gdprTopics } from '../types';
+import { ConfigInterface } from '../base-types';
+import { Session } from '../session/session';
 
-import {addHostToCallbackUrl, getHandlers, handlerIdentifier} from './registry';
-import {queryTemplate} from './query-template';
+import { addHostToCallbackUrl, getHandlers, handlerIdentifier } from './registry';
+import { queryTemplate } from './query-template';
 import {
   WebhookRegistry,
   RegisterReturn,
@@ -54,7 +54,7 @@ export function register(
     session,
   }: RegisterParams): Promise<RegisterReturn> {
     const log = logger(config);
-    log.info('Registering webhooks', {shop: session.shop});
+    log.info('Registering webhooks', { shop: session.shop });
 
     const registerReturn: RegisterReturn = Object.keys(webhookRegistry).reduce(
       (acc: RegisterReturn, topic) => {
@@ -68,7 +68,7 @@ export function register(
 
     log.debug(
       `Existing topics: [${Object.keys(existingHandlers).join(', ')}]`,
-      {shop: session.shop},
+      { shop: session.shop },
     );
 
     for (const topic in webhookRegistry) {
@@ -92,25 +92,26 @@ export function register(
       delete existingHandlers[topic];
     }
 
-//     ** REDBRAIN PATCH ** disable removal of existing webhooks
-    
+    // ** REDBRAIN PATCH ** disable removal of existing webhooks
+    log.info('REDBRAIN PATCH disabling webhook removal');
+
     // Delete any leftover handlers
-//     for (const topic in existingHandlers) {
-//       if (!Object.prototype.hasOwnProperty.call(existingHandlers, topic)) {
-//         continue;
-//       }
+    //     for (const topic in existingHandlers) {
+    //       if (!Object.prototype.hasOwnProperty.call(existingHandlers, topic)) {
+    //         continue;
+    //       }
 
-//       const GraphqlClient = graphqlClientClass({config});
-//       const client = new GraphqlClient({session});
+    //       const GraphqlClient = graphqlClientClass({config});
+    //       const client = new GraphqlClient({session});
 
-//       registerReturn[topic] = await runMutations({
-//         config,
-//         client,
-//         topic,
-//         handlers: existingHandlers[topic],
-//         operation: WebhookOperation.Delete,
-//       });
-//     }
+    //       registerReturn[topic] = await runMutations({
+    //         config,
+    //         client,
+    //         topic,
+    //         handlers: existingHandlers[topic],
+    //         operation: WebhookOperation.Delete,
+    //       });
+    //     }
 
     return registerReturn;
   };
@@ -120,8 +121,8 @@ async function getExistingHandlers(
   config: ConfigInterface,
   session: Session,
 ): Promise<WebhookRegistry> {
-  const GraphqlClient = graphqlClientClass({config});
-  const client = new GraphqlClient({session});
+  const GraphqlClient = graphqlClientClass({ config });
+  const client = new GraphqlClient({ session });
 
   const existingHandlers: WebhookRegistry = {};
 
@@ -169,7 +170,7 @@ function buildHandlerFromNode(edge: WebhookCheckResponseNode): WebhookHandler {
         privateMetafieldNamespaces: edge.node.privateMetafieldNamespaces,
         callbackUrl: endpoint.callbackUrl,
         // This is a dummy for now because we don't really care about it
-        callback: async () => {},
+        callback: async () => { },
       };
 
       // This field only applies to HTTP webhooks
@@ -211,28 +212,28 @@ async function registerTopic({
 }: RegisterTopicParams): Promise<RegisterResult[]> {
   let registerResults: RegisterResult[] = [];
 
-  const {toCreate, toUpdate, toDelete} = categorizeHandlers(
+  const { toCreate, toUpdate, toDelete } = categorizeHandlers(
     config,
     existingHandlers,
     handlers,
   );
 
-  const GraphqlClient = graphqlClientClass({config});
-  const client = new GraphqlClient({session});
+  const GraphqlClient = graphqlClientClass({ config });
+  const client = new GraphqlClient({ session });
 
   let operation = WebhookOperation.Create;
   registerResults = registerResults.concat(
-    await runMutations({config, client, topic, operation, handlers: toCreate}),
+    await runMutations({ config, client, topic, operation, handlers: toCreate }),
   );
 
   operation = WebhookOperation.Update;
   registerResults = registerResults.concat(
-    await runMutations({config, client, topic, operation, handlers: toUpdate}),
+    await runMutations({ config, client, topic, operation, handlers: toUpdate }),
   );
 
   operation = WebhookOperation.Delete;
   registerResults = registerResults.concat(
-    await runMutations({config, client, topic, operation, handlers: toDelete}),
+    await runMutations({ config, client, topic, operation, handlers: toDelete }),
   );
 
   return registerResults;
@@ -259,7 +260,7 @@ function categorizeHandlers(
     {},
   );
 
-  const toCreate: HandlersByKey = {...handlersByKey};
+  const toCreate: HandlersByKey = { ...handlersByKey };
   const toUpdate: HandlersByKey = {};
   const toDelete: HandlersByKey = {};
   for (const existingKey in existingHandlersByKey) {
@@ -342,7 +343,7 @@ async function runMutations({
 
   for (const handler of handlers) {
     registerResults.push(
-      await runMutation({config, client, topic, handler, operation}),
+      await runMutation({ config, client, topic, handler, operation }),
     );
   }
 
@@ -358,12 +359,12 @@ async function runMutation({
 }: RunMutationParams): Promise<RegisterResult> {
   let registerResult: RegisterResult;
 
-  logger(config).debug(`Running webhook mutation`, {topic, operation});
+  logger(config).debug(`Running webhook mutation`, { topic, operation });
 
   try {
     const query = buildMutation(config, topic, handler, operation);
 
-    const result = await client.query({data: query});
+    const result = await client.query({ data: query });
 
     registerResult = {
       deliveryMethod: handler.deliveryMethod,
@@ -375,7 +376,7 @@ async function runMutation({
       registerResult = {
         deliveryMethod: handler.deliveryMethod,
         success: false,
-        result: {message: error.message},
+        result: { message: error.message },
       };
     } else {
       throw error;
@@ -391,7 +392,7 @@ function buildMutation(
   handler: WebhookHandler,
   operation: WebhookOperation,
 ): string {
-  const params: {[key: string]: string} = {};
+  const params: { [key: string]: string } = {};
 
   let identifier: string;
   if (handler.id) {
@@ -492,8 +493,8 @@ function isSuccess(
 
   return Boolean(
     result.data &&
-      result.data[mutationName] &&
-      result.data[mutationName].userErrors.length === 0,
+    result.data[mutationName] &&
+    result.data[mutationName].userErrors.length === 0,
   );
 }
 
