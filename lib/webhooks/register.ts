@@ -64,33 +64,33 @@ export function register(
       {},
     );
 
-    const existingHandlers = await getExistingHandlers(config, session);
+    // const existingHandlers = await getExistingHandlers(config, session);
 
-    log.debug(
-      `Existing topics: [${Object.keys(existingHandlers).join(', ')}]`,
-      { shop: session.shop },
-    );
+    // log.debug(
+    //   `Existing topics: [${Object.keys(existingHandlers).join(', ')}]`,
+    //   { shop: session.shop },
+    // );
 
-    for (const topic in webhookRegistry) {
-      if (!Object.prototype.hasOwnProperty.call(webhookRegistry, topic)) {
-        continue;
-      }
+    // for (const topic in webhookRegistry) {
+    //   if (!Object.prototype.hasOwnProperty.call(webhookRegistry, topic)) {
+    //     continue;
+    //   }
 
-      if (gdprTopics.includes(topic)) {
-        continue;
-      }
+    //   if (gdprTopics.includes(topic)) {
+    //     continue;
+    //   }
 
-      registerReturn[topic] = await registerTopic({
-        config,
-        session,
-        topic,
-        existingHandlers: existingHandlers[topic] || [],
-        handlers: getHandlers(webhookRegistry)(topic),
-      });
+    //   registerReturn[topic] = await registerTopic({
+    //     config,
+    //     session,
+    //     topic,
+    //     existingHandlers: existingHandlers[topic] || [],
+    //     handlers: getHandlers(webhookRegistry)(topic),
+    //   });
 
-      // Remove this topic from the list of existing handlers so we have a list of leftovers
-      delete existingHandlers[topic];
-    }
+    //   // Remove this topic from the list of existing handlers so we have a list of leftovers
+    //   delete existingHandlers[topic];
+    // }
 
     // ** REDBRAIN PATCH ** disable removal of existing webhooks
     log.info('REDBRAIN PATCH disabling webhook removal');
