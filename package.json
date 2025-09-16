@@ -1,5 +1,5 @@
 {
-  "name": "@shopify/shopify-api",
+  "name": "@Redbrainltd/shopify-api-js",
   "version": "11.14.1",
   "description": "Shopify API Library for Node - accelerate development with support for authentication, graphql proxy, webhooks",
   "types": "./dist/ts/lib/index.d.ts",
@@ -65,13 +65,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Shopify/shopify-app-js.git",
-    "directory": "packages/apps/shopify-api"
+    "url": "git+https://github.com/Redbrainltd/shopify-api-js.git"
   },
   "bugs": {
-    "url": "https://github.com/Shopify/shopify-app-js/issues"
+    "url": "https://github.com/Redbrainltd/shopify-api-js/issues"
   },
-  "homepage": "https://github.com/Shopify/shopify-app-js/tree/main/packages/apps/shopify-api",
+  "homepage": "https://github.com/Redbrainltd/shopify-api-js",
   "author": "Shopify Inc.",
   "license": "MIT",
   "keywords": [
