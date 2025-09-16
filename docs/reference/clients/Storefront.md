@@ -2,11 +2,11 @@
 
 Instances of this class can make requests to the Shopify Storefront API.
 
-> **Note**: ⚠️ This API limits request rates based on the IP address that calls it, which will be your server's address for all requests made by the library. The API uses a leaky bucket algorithm, with a default bucket size of 60 seconds of request processing time (minimum 0.5s per request), with a leak rate of 1/s. Learn more about [rate limits](https://shopify.dev/docs/api/usage/rate-limits).
+> **Note**: ⚠️ This API limits request rates based on the IP address that calls it. This API uses a leaky bucket algorithm, with a default bucket size of 60 seconds of request processing time (minimum 0.5s per request), with a leak rate of 1/s. Learn more about [rate limits](https://shopify.dev/docs/api/usage/rate-limits).
 
 ## Requirements
 
-You can create Storefront API access tokens for both **private apps** and **sales channels**, but you **must use offline access tokens** for sales channels. Please read [our documentation](https://shopify.dev/docs/custom-storefronts/building-with-the-storefront-api/products-collections/getting-started) to learn more about Storefront Access Tokens.
+You can authenticate with the Storefront API using either [public or private access tokens](https://shopify.dev/docs/api/storefront#authentication). This package always runs on an app's backend, so you should prefer private access tokens when making requests to the API.
 
 If you are building a private app, you can set a default Storefront Access Token for all `Storefront` client instances by setting the `config.privateAppStorefrontAccessToken` property when calling [`shopifyApi`](../shopifyApi.md).
 
@@ -14,10 +14,9 @@ If you are building a private app, you can set a default Storefront Access Token
 
 ### Example
 
-Below is a (simplified) example of how you may create a token and construct a client.
-See the [REST](https://shopify.dev/docs/api/admin-rest/latest/resources/storefrontaccesstoken) or [GraphQL](https://shopify.dev/docs/api/admin-graphql/latest/mutations/storefrontAccessTokenCreate) Admin API references for more information.
+Below is an example of how you may construct this client, using the same `Session` object as the [Admin API client](./Graphql.md).
 
-Once you've created your access token, you can query the Storefront API based on the `unauthenticated_*` scopes your app requests.
+To query this API, your app will need to set the appropriate `unauthenticated_*` scopes when going through OAuth.
 See the [API reference documentation](https://shopify.dev/docs/api/storefront) for detailed instructions on each component.
 
 ```ts
@@ -29,27 +28,11 @@ app.get('/my-endpoint', async (req, res) => {
   });
 
   // use sessionId to retrieve session from app's session storage
-  // getSessionFromStorage() must be provided by application
+  // getSessionFromStorage() must be provided by the application
   const session = await getSessionFromStorage(sessionId);
 
-  const adminApiClient = new shopify.clients.Rest({session});
-  const storefrontTokenResponse = await adminApiClient.post({
-    path: 'storefront_access_tokens',
-    data: {
-      storefront_access_token: {
-        title: 'This is my test access token',
-      },
-    },
-  });
-
-  const storefrontAccessToken =
-    storefrontTokenResponse.body.storefront_access_token.access_token;
-
-  // For simplicity, this example creates a token every time it's called, but that is not ideal.
-  // You can fetch existing Storefront access tokens using the Admin API client.
-  const storefrontClient = new shopify.clients.Storefront({
-    domain: session.shop,
-    storefrontAccessToken,
+  const client = new shopify.clients.Storefront({
+    session,
     apiVersion: ApiVersion.January23,
   });
 });
@@ -59,17 +42,11 @@ app.get('/my-endpoint', async (req, res) => {
 
 Receives an object containing:
 
-#### domain
+#### session
 
-`string` | :exclamation: required
+`Session` | :exclamation: required for non-Custom store apps
 
-The shop domain for the request.
-
-#### storefrontAccessToken
-
-`string` | :exclamation: required
-
-The access token created using one of the Admin APIs.
+The session for the request.
 
 #### apiVersion
 
@@ -78,15 +55,15 @@ The access token created using one of the Admin APIs.
 This will override the default API version.
 Any requests made by this client will reach this version instead.
 
-## Query
+## Request
 
 Sends a request to the Storefront API.
 
 ### Examples
 
 ```ts
-const products = await storefrontClient.query({
-  data: `{
+const products = await storefrontClient.request(
+  `{
     products (first: 10) {
       edges {
         node {
@@ -97,53 +74,53 @@ const products = await storefrontClient.query({
       }
     }
   }`,
-});
+);
 
 // do something with the returned data
 ```
 
 ### Parameters
 
-#### data
+#### operation
 
-`{[key: string]: unknown} | string` | :exclamation: required
+`string` | :exclamation: required
 
-Either a string, or an object with a `query` and `variables`.
+The query or mutation string.
 
-#### query
+#### options.variables
 
-`{[key: string]: string | number}`
+`{[key: string]: any}`
 
-An optional query argument object to append to the request URL.
+The variables for the operation.
 
-#### extraHeaders
+#### options.headers
 
 `{[key: string]: string | number}`
 
 Add custom headers to the request.
 
-#### tries
+#### options.retries
 
-`number` | Defaults to `1`, _must be >= 0_
+`number` | _Must be between_ `0 and 3`
 
 The maximum number of times to retry the request.
 
 ### Return
 
-`Promise<RequestResponse>`
+`Promise<ClientResponse>`
 
 Returns an object containing:
 
-#### Headers
-
-`{[key: string]: string | string[]}`
-
-The HTTP headers in the response from Shopify.
-
-#### Body
+#### Data
 
 `any`
 
-The HTTP body in the response from Shopify.
+The `data` component of the response.
+
+#### Extensions
+
+`any`
+
+The `extensions` component of the response.
 
 [Back to shopify.clients](./README.md)

@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames, Body} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -34,13 +34,11 @@ interface SetArgs {
 }
 
 export class CustomerAddress extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'customer_address';
-  protected static PLURAL_NAME = 'customer_addresses';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["customer_id", "id"], "path": "customers/<customer_id>/addresses/<id>.json"},
     {"http_method": "get", "operation": "get", "ids": ["customer_id"], "path": "customers/<customer_id>/addresses.json"},
     {"http_method": "get", "operation": "get", "ids": ["customer_id", "id"], "path": "customers/<customer_id>/addresses/<id>.json"},
@@ -49,10 +47,33 @@ export class CustomerAddress extends Base {
     {"http_method": "put", "operation": "put", "ids": ["customer_id", "id"], "path": "customers/<customer_id>/addresses/<id>.json"},
     {"http_method": "put", "operation": "set", "ids": ["customer_id"], "path": "customers/<customer_id>/addresses/set.json"}
   ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "customer_address",
+      "plural": "customer_addresses"
+    },
+    {
+      "singular": "address",
+      "plural": "addresses"
+    }
+  ];
 
   protected static getJsonBodyName(): string
   {
     return "address";
+  }
+
+  protected setData(data: Body): void {
+    if (this.resource().config.future?.customerAddressDefaultFix) {
+      if ('default' in data) {
+        data['is_default'] = Boolean(data['default']);
+        delete data['default'];
+      } else {
+        data['is_default'] = false;
+      }
+    }
+
+    return super.setData(data);
   }
 
   public static async find(
@@ -64,10 +85,11 @@ export class CustomerAddress extends Base {
   ): Promise<CustomerAddress | null> {
     const result = await this.baseFind<CustomerAddress>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "customer_id": customer_id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -94,7 +116,7 @@ export class CustomerAddress extends Base {
       customer_id = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<CustomerAddress[]> {
+  ): Promise<FindAllResponse<CustomerAddress>> {
     const response = await this.baseFind<CustomerAddress>({
       session: session,
       urlIds: {"customer_id": customer_id},
@@ -151,9 +173,10 @@ export class CustomerAddress extends Base {
   public country: string | null;
   public country_code: string | null;
   public country_name: string | null;
-  public customer_id: number | null;
+  public customer_id: string | null;
   public first_name: string | null;
-  public id: number | null;
+  public id: string | null;
+  public is_default: boolean | null;
   public last_name: string | null;
   public name: string | null;
   public phone: string | null;

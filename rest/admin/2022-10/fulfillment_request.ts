@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {ResourcePath, ResourceNames} from '../../types';
 import {ApiVersion} from '../../../lib/types';
 
 interface AcceptArgs {
@@ -20,16 +20,24 @@ interface RejectArgs {
 }
 
 export class FulfillmentRequest extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'fulfillment_request';
-  protected static PLURAL_NAME = 'fulfillment_requests';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "post", "operation": "accept", "ids": ["fulfillment_order_id"], "path": "fulfillment_orders/<fulfillment_order_id>/fulfillment_request/accept.json"},
     {"http_method": "post", "operation": "post", "ids": ["fulfillment_order_id"], "path": "fulfillment_orders/<fulfillment_order_id>/fulfillment_request.json"},
     {"http_method": "post", "operation": "reject", "ids": ["fulfillment_order_id"], "path": "fulfillment_orders/<fulfillment_order_id>/fulfillment_request/reject.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "submitted_fulfillment_order",
+      "plural": "submitted_fulfillment_orders"
+    },
+    {
+      "singular": "fulfillment_order",
+      "plural": "fulfillment_orders"
+    }
   ];
 
   public async accept(
@@ -74,5 +82,5 @@ export class FulfillmentRequest extends Base {
     return response ? response.body : null;
   }
 
-  public fulfillment_order_id: number | null;
+  public fulfillment_order_id: string | null;
 }

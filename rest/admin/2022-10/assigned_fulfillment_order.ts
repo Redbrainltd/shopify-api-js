@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -15,14 +15,18 @@ interface AllArgs {
 }
 
 export class AssignedFulfillmentOrder extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'fulfillment_order';
-  protected static PLURAL_NAME = 'fulfillment_orders';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": [], "path": "assigned_fulfillment_orders.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "fulfillment_order",
+      "plural": "fulfillment_orders"
+    }
   ];
 
   public static async all(
@@ -32,7 +36,7 @@ export class AssignedFulfillmentOrder extends Base {
       location_ids = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<AssignedFulfillmentOrder[]> {
+  ): Promise<FindAllResponse<AssignedFulfillmentOrder>> {
     const response = await this.baseFind<AssignedFulfillmentOrder>({
       session: session,
       urlIds: {},
@@ -42,12 +46,12 @@ export class AssignedFulfillmentOrder extends Base {
     return response;
   }
 
-  public assigned_location_id: number | null;
+  public assigned_location_id: string | null;
   public destination: {[key: string]: unknown} | null;
-  public id: number | null;
+  public id: string | null;
   public line_items: {[key: string]: unknown}[] | null;
-  public order_id: number | null;
+  public order_id: string | null;
   public request_status: string | null;
-  public shop_id: number | null;
+  public shop_id: string | null;
   public status: string | null;
 }

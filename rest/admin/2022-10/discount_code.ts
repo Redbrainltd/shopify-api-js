@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -47,13 +47,11 @@ interface BatchArgs {
 }
 
 export class DiscountCode extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'discount_code';
-  protected static PLURAL_NAME = 'discount_codes';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["price_rule_id", "id"], "path": "price_rules/<price_rule_id>/discount_codes/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "discount_codes/count.json"},
     {"http_method": "get", "operation": "get", "ids": ["price_rule_id", "batch_id"], "path": "price_rules/<price_rule_id>/batch/<batch_id>/discount_codes.json"},
@@ -65,6 +63,12 @@ export class DiscountCode extends Base {
     {"http_method": "post", "operation": "post", "ids": ["price_rule_id"], "path": "price_rules/<price_rule_id>/discount_codes.json"},
     {"http_method": "put", "operation": "put", "ids": ["price_rule_id", "id"], "path": "price_rules/<price_rule_id>/discount_codes/<id>.json"}
   ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "discount_code",
+      "plural": "discount_codes"
+    }
+  ];
 
   public static async find(
     {
@@ -75,10 +79,11 @@ export class DiscountCode extends Base {
   ): Promise<DiscountCode | null> {
     const result = await this.baseFind<DiscountCode>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "price_rule_id": price_rule_id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -106,7 +111,7 @@ export class DiscountCode extends Base {
       batch_id = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<DiscountCode[]> {
+  ): Promise<FindAllResponse<DiscountCode>> {
     const response = await this.baseFind<DiscountCode>({
       session: session,
       urlIds: {"price_rule_id": price_rule_id, "batch_id": batch_id},
@@ -200,8 +205,9 @@ export class DiscountCode extends Base {
 
   public code: string | null;
   public created_at: string | null;
-  public id: number | null;
-  public price_rule_id: number | null;
+  public errors: {[key: string]: unknown} | null;
+  public id: string | null;
+  public price_rule_id: string | null;
   public updated_at: string | null;
   public usage_count: number | null;
 }

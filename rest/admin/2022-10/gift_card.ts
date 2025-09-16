@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -35,6 +35,7 @@ interface SearchArgs {
   created_at_max?: unknown;
   updated_at_min?: unknown;
   updated_at_max?: unknown;
+  returnFullResponse?: boolean;
 }
 interface DisableArgs {
   [key: string]: unknown;
@@ -42,13 +43,11 @@ interface DisableArgs {
 }
 
 export class GiftCard extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'gift_card';
-  protected static PLURAL_NAME = 'gift_cards';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "count", "ids": [], "path": "gift_cards/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "gift_cards.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "gift_cards/<id>.json"},
@@ -56,6 +55,12 @@ export class GiftCard extends Base {
     {"http_method": "post", "operation": "disable", "ids": ["id"], "path": "gift_cards/<id>/disable.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "gift_cards.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "gift_cards/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "gift_card",
+      "plural": "gift_cards"
+    }
   ];
 
   public static async find(
@@ -66,10 +71,11 @@ export class GiftCard extends Base {
   ): Promise<GiftCard | null> {
     const result = await this.baseFind<GiftCard>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -81,7 +87,7 @@ export class GiftCard extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<GiftCard[]> {
+  ): Promise<FindAllResponse<GiftCard>> {
     const response = await this.baseFind<GiftCard>({
       session: session,
       urlIds: {},
@@ -122,6 +128,7 @@ export class GiftCard extends Base {
       created_at_max = null,
       updated_at_min = null,
       updated_at_max = null,
+      returnFullResponse = false,
       ...otherArgs
     }: SearchArgs
   ): Promise<unknown> {
@@ -135,7 +142,7 @@ export class GiftCard extends Base {
       entity: null,
     });
 
-    return response ? response.body : null;
+    return returnFullResponse ? response : response?.body;
   }
 
   public async disable(
@@ -157,21 +164,21 @@ export class GiftCard extends Base {
     return response ? response.body : null;
   }
 
-  public api_client_id: number | null;
-  public balance: number | null;
+  public api_client_id: string | null;
+  public balance: string | null;
   public code: string | null;
   public created_at: string | null;
   public currency: string | null;
-  public customer_id: number | null;
+  public customer_id: string | null;
   public disabled_at: string | null;
   public expires_on: string | null;
-  public id: number | null;
-  public initial_value: number | null;
+  public id: string | null;
+  public initial_value: string | null;
   public last_characters: string | null;
-  public line_item_id: number | null;
+  public line_item_id: string | null;
   public note: string | null;
-  public order_id: number | null;
+  public order_id: string | null;
   public template_suffix: string | null;
   public updated_at: string | null;
-  public user_id: number | null;
+  public user_id: string | null;
 }

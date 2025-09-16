@@ -34,6 +34,9 @@ const shopify = shopifyApi({
     },
   },
   restResources,
+  future: {
+    // ...
+  },
 });
 ```
 
@@ -69,13 +72,13 @@ App host name in the format `my-host-name.com`. Do **not** include the scheme or
 
 The scheme for your app's public URL. `http` is only allowed if your app is running on `localhost`.
 
-### apiVersion
+### apiVersion | :exclamation: **required**
 
-`ApiVersion` | Defaults to `LATEST_API_VERSION`
+`ApiVersion` | :exclamation: **required**
 
-API version your app will be querying. E.g. `ApiVersion.October22`.
+API version your app will be querying. E.g. `ApiVersion.July25`.
 
-### isEmbeddedApp
+### isEmbeddedApp | :exclamation: **required**
 
 `boolean` | Defaults to `true`
 
@@ -118,6 +121,12 @@ Billing configurations. [See documentation](../guides/billing.md) for full descr
 Mounts the given REST resources onto the object. Learn more about [using REST resources](../guides/rest-resources.md).
 
 > **Note**: _Must_ use the same version as `apiVersion`.
+
+### future
+
+`string: boolean`
+
+Apps can enable future flags to opt in to new functionality and breaking changes ahead of time.
 
 ### logger
 
@@ -163,6 +172,8 @@ This function returns an object containing the following properties:
 | [session](./session/README.md)      | Object containing functions to manage Shopify sessions.                                                                                                 |
 | [webhooks](./webhooks/README.md)    | Object containing functions to configure and handle Shopify webhooks.                                                                                   |
 | [billing](./billing/README.md)      | Object containing functions to enable apps to bill merchants.                                                                                           |
+| [flow](./flow/README.md)            | Object containing functions to authenticate Flow extension requests.
+| [fulfillment service](./fulfillment-service/README.md)            | Object containing functions to authenticate and create fulfillment service requests.                                                                                |
 | [utils](./utils/README.md)          | Object containing general functions to help build apps.                                                                                                 |
 | [rest](../guides/rest-resources.md) | Object containing OO representations of the Admin REST API. See the [API reference documentation](https://shopify.dev/docs/api/admin-rest) for details. |
 

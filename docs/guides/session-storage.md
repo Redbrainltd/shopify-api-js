@@ -2,7 +2,7 @@
 
 As of v6 of the library, there are no `SessionStorage` implementations included and the responsibility for implementing session storage is now delegated to the application.
 
-The previous implementations of `SessionStorage` are now available in their own packages, the source of which is available in the respective directory in the [`Shopify/shopify-app-js` repo](https://github.com/Shopify/shopify-app-js/tree/main/packages).
+The previous implementations of `SessionStorage` are now available in their own packages, the source of which is available in the [respective directory](../../../session-storage#readme).
 
 |                      Package                      |  Session storage object  | Notes                                    |
 | :-----------------------------------------------: | :----------------------: | ---------------------------------------- |
@@ -12,6 +12,8 @@ The previous implementations of `SessionStorage` are now available in their own 
 | `@shopify/shopify-app-session-storage-postgresql` | PostgreSQLSessionStorage |                                          |
 |   `@shopify/shopify-app-session-storage-redis`    |   RedisSessionStorage    |                                          |
 |   `@shopify/shopify-app-session-storage-sqlite`   |   SQLiteSessionStorage   |                                          |
+|  `@shopify/shopify-app-session-storage-dynamodb`  |  DynamoDBSessionStorage  |                                          |
+|     `@shopify/shopify-app-session-storage-kv`     |     KVSessionStorage     |                                          |
 |      `@shopify/shopify-app-session-storage`       |      SessionStorage      | Abstract class used by the classes above |
 
 ## Basics
@@ -59,9 +61,11 @@ const sessionCopy = new Session(callbackResponse.session.toObject());
 // sessionCopy is an identical copy of the callbackResponse.session instance
 ```
 
-Now that the app has a JavaScript object containing the data of a `Session`, it can convert the data into whatever means necessary to store it in the apps preferred storage mechanism. Various implementations of session storage can be found in the [`shopify-app-js` repo](https://github.com/Shopify/shopify-app-js/tree/main/packages).
+Now that the app has a JavaScript object containing the data of a `Session`, it can convert the data into whatever means necessary to store it in the apps preferred storage mechanism. Various implementations of session storage can be found in the [`session-storages` folder](../../../session-storage#readme).
 
 The `Session` class also includes an instance method called `.toPropertyArray` that returns an array of key-value pairs, e.g.,
+
+`toPropertyArray` has an optional parameter `returnUserData`, defaulted to false, when set to true it will return the associated user data as part of the property array object.
 
 ```ts
 const {session, headers} = shopify.auth.callback({
@@ -95,19 +99,74 @@ const {session, headers} = shopify.auth.callback({
   }
  */
 
-const sessionProperties = session.toPropertyArray();
+const sessionProperties = session.toPropertyArray(true);
 /*
   ... then sessionProperties will have the following data...
-  [
+   [
     ['id', 'online_session_id'],
     ['shop', 'online-session-shop'],
     ['state', 'online-session-state'],
     ['isOnline', true],
     ['scope', 'online-session-scope'],
     ['accessToken', 'online-session-token'],
-    ['expires', 1641013200000],  // number, milliseconds since Jan 1, 1970
-    ['onlineAccessInfo', 1],  // only the `id` property of the `associated_user` property is stored
-  ]
+    ['expires', 1641013200000],  // example = January 1, 2022, as number of milliseconds since Jan 1, 1970
+    ['userId', 1],
+    ['first_name', 'online-session-first-name'],
+    ['last_name', 'online-session-last-name'],
+    ['email', 'online-session-email'],
+    ['locale', 'online-session-locale'],
+    ['email_verified', false]
+    ['account_owner', true,]
+    ['collaborator', false],
+    ],
+ */
+```
+
+```ts
+const {session, headers} = shopify.auth.callback({
+  rawRequest: req,
+  rawResponse: res,
+});
+/*
+   If session has the following data content...
+  {
+    id: 'online_session_id',
+    shop: 'online-session-shop',
+    state: 'online-session-state',
+    isOnline: true,
+    scope: 'online-session-scope',
+    accessToken: 'online-session-token',
+    expires: 2022-01-01T05:00:00.000Z,  // Date object
+    onlineAccessInfo: {
+      expires_in: 1,
+      associated_user_scope: 'online-session-user-scope',
+      associated_user: {
+        id: 1,
+        first_name: 'online-session-first-name',
+        last_name: 'online-session-last-name',
+        email: 'online-session-email',
+        locale: 'online-session-locale',
+        email_verified: true,
+        account_owner: true,
+        collaborator: false,
+      },
+    }
+  }
+ */
+
+const sessionProperties = session.toPropertyArray(false);
+/*
+  ... then sessionProperties will have the following data...
+   [
+    ['id', 'online_session_id'],
+    ['shop', 'online-session-shop'],
+    ['state', 'online-session-state'],
+    ['isOnline', true],
+    ['scope', 'online-session-scope'],
+    ['accessToken', 'online-session-token'],
+    ['expires', 1641013200000],  // example = January 1, 2022, as number of milliseconds since Jan 1, 1970
+    ['onlineAccessInfo', 1], // The userID is returned under onlineAccessInfo
+    ],
  */
 ```
 
@@ -115,7 +174,7 @@ const sessionProperties = session.toPropertyArray();
 >
 > In v6, the `.toPropertyArray` method now returns the `expires` property in _milliseconds_ and leaves it to the app to convert it (if needed) to seconds for session storage.
 >
-> The existing SQL-based implementations in the [`shopify-app-js` mono repo](https://github.com/Shopify/shopify-app-js/tree/main/packages), i.e., MySQL, PostgreSQL and SQLite, convert it to seconds for storage. The remaining implementations do not change the stored `expires` property.
+> The existing [SQL-based implementations](../../../session-storage#readme), i.e., MySQL, PostgreSQL and SQLite, convert it to seconds for storage. The remaining implementations do not change the stored `expires` property.
 
 ### Load a session from storage
 
@@ -141,8 +200,10 @@ Once the `Session` is found, the app must ensure that it converts it from the st
 
 If the `.toPropertyArray` method was used to obtain the session data, the `Session` class has a `.fromPropertyArray` static method that can be used to convert the array data back into a session.
 
+`FromPropertyArray` has an optional parameter `returnUserData`, defaulted to false, when set to true it will return the associated user data if it is included in the property array.
+
 ```ts
-const sessionProperties = session.toPropertyArray();
+const sessionProperties = session.toPropertyArray(true);
 /*
   if sessionProperties has the following data...
   [
@@ -153,8 +214,58 @@ const sessionProperties = session.toPropertyArray();
     ['scope', 'online-session-scope'],
     ['accessToken', 'online-session-token'],
     ['expires', 1641013200000],  // example = January 1, 2022, as number of milliseconds since Jan 1, 1970
-    ['onlineAccessInfo', 1],  // only the `id` property of the `associated_user` property is stored
-  ]
+    ['userId', 1],
+    ['first_name', 'online-session-first-name'],
+    ['last_name', 'online-session-last-name'],
+    ['email', 'online-session-email'],
+    ['locale', 'online-session-locale'],
+    ['email_verified', false]
+    ['account_owner', true,]
+    ['collaborator', false],
+    ],
+ */
+
+const session = Session.fromPropertyArray(sessionProperties, true);
+/*
+  ... then session will have the following data...
+  {
+    id: 'online_session_id',
+    shop: 'online-session-shop',
+    state: 'online-session-state',
+    isOnline: true,
+    scope: 'online-session-scope',
+    accessToken: 'online-session-token',
+    expires: 2022-01-01T05:00:00.000Z,  // Date object
+    onlineAccessInfo: {
+      associated_user: {
+        id: 1,
+        first_name: 'online-session-first-name'
+        last_name: 'online-session-last-name',
+        email: 'online-session-email',
+        locale: 'online-session-locale',
+        email_verified: false,
+        account_owner: true,
+        collaborator: false,
+      },
+    }
+  }
+ */
+```
+
+```ts
+const sessionProperties = session.toPropertyArray();
+/*
+  if sessionProperties has the following data, without the user data
+  [
+    ['id', 'online_session_id'],
+    ['shop', 'online-session-shop'],
+    ['state', 'online-session-state'],
+    ['isOnline', true],
+    ['scope', 'online-session-scope'],
+    ['accessToken', 'online-session-token'],
+    ['expires', 1641013200000],  // example = January 1, 2022, as number of milliseconds since Jan 1, 1970
+    ['onlineAccessInfo', 1],
+    ],
  */
 
 const session = Session.fromPropertyArray(sessionProperties);
@@ -181,6 +292,6 @@ const session = Session.fromPropertyArray(sessionProperties);
 >
 > In v6, the `.fromPropertyArray` method now returns the `expires` property in _milliseconds_ and leaves it to the app to convert it (if needed) from seconds.
 >
-> The existing SQL-based implementations in the [`shopify-app-js` mono repo](https://github.com/Shopify/shopify-app-js/tree/main/packages), i.e., MySQL, PostgreSQL and SQLite, convert it from seconds from storage. The remaining implementations do not change the retrieved `expires` property.
+> The existing [SQL-based implementations](../../../session-storage#readme), i.e., MySQL, PostgreSQL and SQLite, convert it from seconds from storage. The remaining implementations do not change the retrieved `expires` property.
 
 [Back to guide index](../../README.md#guides)

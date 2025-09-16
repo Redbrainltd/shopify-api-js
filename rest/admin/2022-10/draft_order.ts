@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -49,15 +49,13 @@ interface CompleteArgs {
 }
 
 export class DraftOrder extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'draft_order';
-  protected static PLURAL_NAME = 'draft_orders';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {
     "customer": Customer
   };
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "draft_orders/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "draft_orders/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "draft_orders.json"},
@@ -66,6 +64,12 @@ export class DraftOrder extends Base {
     {"http_method": "post", "operation": "send_invoice", "ids": ["id"], "path": "draft_orders/<id>/send_invoice.json"},
     {"http_method": "put", "operation": "complete", "ids": ["id"], "path": "draft_orders/<id>/complete.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "draft_orders/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "draft_order",
+      "plural": "draft_orders"
+    }
   ];
 
   public static async find(
@@ -77,10 +81,11 @@ export class DraftOrder extends Base {
   ): Promise<DraftOrder | null> {
     const result = await this.baseFind<DraftOrder>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -112,7 +117,7 @@ export class DraftOrder extends Base {
       status = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<DraftOrder[]> {
+  ): Promise<FindAllResponse<DraftOrder>> {
     const response = await this.baseFind<DraftOrder>({
       session: session,
       urlIds: {},
@@ -192,20 +197,20 @@ export class DraftOrder extends Base {
   public currency: string | null;
   public customer: Customer | null | {[key: string]: any};
   public email: string | null;
-  public id: number | null;
+  public id: string | null;
   public invoice_sent_at: string | null;
   public invoice_url: string | null;
   public line_items: {[key: string]: unknown}[] | null;
   public name: string | null;
   public note: string | null;
   public note_attributes: {[key: string]: unknown}[] | null;
-  public order_id: number | null;
+  public order_id: string | null;
   public payment_terms: {[key: string]: unknown} | null;
   public shipping_address: {[key: string]: unknown} | null;
   public shipping_line: {[key: string]: unknown} | null;
   public source_name: string | null;
   public status: string | null;
-  public subtotal_price: number | null;
+  public subtotal_price: string | null;
   public tags: string | null;
   public tax_exempt: boolean | null;
   public tax_exemptions: string[] | null;

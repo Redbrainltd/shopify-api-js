@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -14,15 +14,19 @@ interface DeleteArgs {
 }
 
 export class DisputeFileUpload extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'dispute_file_upload';
-  protected static PLURAL_NAME = 'dispute_file_uploads';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["dispute_id", "id"], "path": "shopify_payments/disputes/<dispute_id>/dispute_file_uploads/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": ["dispute_id"], "path": "shopify_payments/disputes/<dispute_id>/dispute_file_uploads.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "dispute_file_upload",
+      "plural": "dispute_file_uploads"
+    }
   ];
 
   public static async delete(
@@ -43,13 +47,13 @@ export class DisputeFileUpload extends Base {
     return response ? response.body : null;
   }
 
-  public dispute_evidence_id: number | null;
+  public dispute_evidence_id: string | null;
   public dispute_evidence_type: string | null;
   public file_size: number | null;
   public file_type: string | null;
   public filename: string | null;
-  public id: number | null;
+  public id: string | null;
   public original_filename: string | null;
-  public shop_id: number | null;
+  public shop_id: string | null;
   public url: string | null;
 }

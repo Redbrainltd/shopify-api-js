@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -19,16 +19,20 @@ interface AllArgs {
 }
 
 export class InventoryItem extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'inventory_item';
-  protected static PLURAL_NAME = 'inventory_items';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": [], "path": "inventory_items.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "inventory_items/<id>.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "inventory_items/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "inventory_item",
+      "plural": "inventory_items"
+    }
   ];
 
   public static async find(
@@ -39,10 +43,11 @@ export class InventoryItem extends Base {
   ): Promise<InventoryItem | null> {
     const result = await this.baseFind<InventoryItem>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -52,7 +57,7 @@ export class InventoryItem extends Base {
       limit = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<InventoryItem[]> {
+  ): Promise<FindAllResponse<InventoryItem>> {
     const response = await this.baseFind<InventoryItem>({
       session: session,
       urlIds: {},
@@ -67,7 +72,7 @@ export class InventoryItem extends Base {
   public country_harmonized_system_codes: {[key: string]: unknown}[] | null;
   public created_at: string | null;
   public harmonized_system_code: number | null;
-  public id: number | null;
+  public id: string | null;
   public province_code_of_origin: string | null;
   public requires_shipping: boolean | null;
   public sku: string | null;

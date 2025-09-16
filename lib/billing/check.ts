@@ -1,117 +1,147 @@
+import {FutureFlagOptions} from '../../future/flags';
 import {ConfigInterface} from '../base-types';
-import {
-  graphqlClientClass,
-  GraphqlClient,
-} from '../clients/graphql/graphql_client';
+import {graphqlClientClass, GraphqlClient} from '../clients/admin';
 import {BillingError} from '../error';
 
 import {
-  CheckParams,
+  AppSubscription,
+  BillingCheck,
+  BillingCheckParams,
+  BillingCheckResponse,
+  BillingCheckResponseObject,
   CurrentAppInstallation,
   CurrentAppInstallations,
+  OneTimePurchase,
+  APP_SUBSCRIPTION_FRAGMENT,
 } from './types';
+import {convertLineItems} from './utils';
 
-interface CheckInternalParams {
-  plans: string[];
+interface SubscriptionMeetsCriteriaParams {
+  subscription: AppSubscription;
+  isTest?: boolean;
+  plans?: string | string[];
+}
+
+interface PurchaseMeetsCriteriaParams {
+  purchase: OneTimePurchase;
+  isTest?: boolean;
+  plans?: string | string[];
+}
+
+interface InternalParams {
   client: GraphqlClient;
-  isTest: boolean;
+  isTest?: boolean;
+  plans?: string | string[];
 }
 
-interface CheckInstallationParams {
-  plans: string[];
-  isTest: boolean;
-  installation: CurrentAppInstallation;
-}
-
-export function check(config: ConfigInterface) {
-  return async function ({
-    session,
-    plans,
-    isTest = true,
-  }: CheckParams): Promise<boolean> {
-    if (!config.billing) {
+export function check<
+  Config extends ConfigInterface,
+  Future extends FutureFlagOptions = Config['future'],
+>(config: Config): BillingCheck<Future> {
+  return async function check<Params extends BillingCheckParams<Future>>(
+    params: Params,
+  ): Promise<BillingCheckResponse<Params, Future>> {
+    if (!config.future?.unstable_managedPricingSupport && !config.billing) {
       throw new BillingError({
         message: 'Attempted to look for purchases without billing configs',
         errorData: [],
       });
     }
 
+    const {session, isTest = true, plans} = params;
+    const returnObject =
+      (params as BillingCheckParams<{unstable_managedPricingSupport: false}>)
+        .returnObject ?? false;
+
     const GraphqlClient = graphqlClientClass({config});
     const client = new GraphqlClient({session});
 
-    const plansArray = Array.isArray(plans) ? plans : [plans];
-    return hasActivePayment({
-      plans: plansArray,
-      client,
-      isTest,
-    });
+    const payments = await assessPayments({client, isTest, plans});
+
+    if (config.future?.unstable_managedPricingSupport || returnObject) {
+      return payments as BillingCheckResponse<Params, Future>;
+    } else {
+      return payments.hasActivePayment as BillingCheckResponse<Params, Future>;
+    }
   };
 }
 
-async function hasActivePayment({
-  plans,
+export async function assessPayments({
   client,
   isTest,
-}: CheckInternalParams): Promise<boolean> {
+  plans,
+}: InternalParams): Promise<BillingCheckResponseObject> {
+  const returnValue: BillingCheckResponseObject = {
+    hasActivePayment: false,
+    oneTimePurchases: [],
+    appSubscriptions: [],
+  };
+
   let installation: CurrentAppInstallation;
   let endCursor: string | null = null;
   do {
-    const currentInstallations = await client.query<CurrentAppInstallations>({
-      data: {
-        query: HAS_PAYMENTS_QUERY,
-        variables: {endCursor},
-      },
-    });
+    const currentInstallations = await client.request<CurrentAppInstallations>(
+      HAS_PAYMENTS_QUERY,
+      {variables: {endCursor}},
+    );
 
-    installation = currentInstallations.body.data.currentAppInstallation;
-    if (
-      hasSubscription({plans, isTest, installation}) ||
-      hasOneTimePayment({plans, isTest, installation})
-    ) {
-      return true;
-    }
+    installation = currentInstallations.data?.currentAppInstallation!;
+    installation.activeSubscriptions.forEach((subscription) => {
+      if (subscriptionMeetsCriteria({subscription, isTest, plans})) {
+        returnValue.hasActivePayment = true;
+        if (subscription.lineItems) {
+          subscription.lineItems = convertLineItems(subscription.lineItems);
+        }
+        returnValue.appSubscriptions.push(subscription);
+      }
+    });
+    installation.oneTimePurchases.edges.forEach(({node: purchase}) => {
+      if (purchaseMeetsCriteria({purchase, isTest, plans})) {
+        returnValue.hasActivePayment = true;
+        returnValue.oneTimePurchases.push(purchase);
+      }
+    });
 
     endCursor = installation.oneTimePurchases.pageInfo.endCursor;
   } while (installation?.oneTimePurchases.pageInfo.hasNextPage);
 
-  return false;
+  return returnValue;
 }
 
-function hasSubscription({
-  plans,
+function subscriptionMeetsCriteria({
+  subscription,
   isTest,
-  installation,
-}: CheckInstallationParams): boolean {
-  return installation.activeSubscriptions.some(
-    (subscription) =>
-      plans.includes(subscription.name) && (isTest || !subscription.test),
+  plans,
+}: SubscriptionMeetsCriteriaParams): boolean {
+  return (
+    (typeof plans === 'undefined' || plans.includes(subscription.name)) &&
+    (isTest || !subscription.test)
   );
 }
 
-function hasOneTimePayment({
-  plans,
+function purchaseMeetsCriteria({
+  purchase,
   isTest,
-  installation,
-}: CheckInstallationParams): boolean {
-  return installation.oneTimePurchases.edges.some(
-    (purchase) =>
-      plans.includes(purchase.node.name) &&
-      (isTest || !purchase.node.test) &&
-      purchase.node.status === 'ACTIVE',
+  plans,
+}: PurchaseMeetsCriteriaParams): boolean {
+  return (
+    (typeof plans === 'undefined' || plans.includes(purchase.name)) &&
+    (isTest || !purchase.test) &&
+    purchase.status === 'ACTIVE'
   );
 }
 
 const HAS_PAYMENTS_QUERY = `
+  ${APP_SUBSCRIPTION_FRAGMENT}
   query appSubscription($endCursor: String) {
     currentAppInstallation {
       activeSubscriptions {
-        name
-        test
+        ...AppSubscriptionFragment
       }
-
       oneTimePurchases(first: 250, sortKey: CREATED_AT, after: $endCursor) {
         edges {
           node {
+            id
             name
             test
             status

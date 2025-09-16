@@ -1,25 +1,27 @@
+import type {ShopifyClients} from '../lib';
 import {ConfigInterface} from '../lib/base-types';
-import {RestClient} from '../lib/clients/rest/rest_client';
 import {logger} from '../lib/logger';
 
 import {Base} from './base';
 import {ShopifyRestResources} from './types';
 
-export interface LoadRestResourcesParams {
-  resources: ShopifyRestResources;
+export interface LoadRestResourcesParams<
+  Resources extends ShopifyRestResources,
+> {
+  resources: Resources;
   config: ConfigInterface;
-  RestClient: typeof RestClient;
+  RestClient: ShopifyClients['Rest'];
 }
 
-export function loadRestResources({
+export function loadRestResources<Resources extends ShopifyRestResources>({
   resources,
   config,
   RestClient,
-}: LoadRestResourcesParams): ShopifyRestResources {
+}: LoadRestResourcesParams<Resources>): Resources {
   const firstResource = Object.keys(resources)[0];
-  if (config.apiVersion !== resources[firstResource].API_VERSION) {
+  if (config.apiVersion !== resources[firstResource].apiVersion) {
     logger(config).warning(
-      `Loading REST resources for API version ${resources[firstResource].API_VERSION}, which doesn't match the default ${config.apiVersion}`,
+      `Loading REST resources for API version ${resources[firstResource].apiVersion}, which doesn't match the default ${config.apiVersion}`,
     );
   }
 
@@ -28,21 +30,21 @@ export function loadRestResources({
       class NewResource extends resource {}
 
       NewResource.setClassProperties({
-        CLIENT: RestClient,
-        CONFIG: config,
+        Client: RestClient,
+        config,
       });
 
-      Object.entries(NewResource.HAS_ONE).map(([_attribute, klass]) => {
+      Object.entries(NewResource.hasOne).map(([_attribute, klass]) => {
         (klass as typeof Base).setClassProperties({
-          CLIENT: RestClient,
-          CONFIG: config,
+          Client: RestClient,
+          config,
         });
       });
 
-      Object.entries(NewResource.HAS_MANY).map(([_attribute, klass]) => {
+      Object.entries(NewResource.hasMany).map(([_attribute, klass]) => {
         (klass as typeof Base).setClassProperties({
-          CLIENT: RestClient,
-          CONFIG: config,
+          Client: RestClient,
+          config,
         });
       });
 
@@ -52,5 +54,5 @@ export function loadRestResources({
 
       return [name, NewResource];
     }),
-  );
+  ) as Resources;
 }

@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -13,14 +13,18 @@ interface AllArgs {
 }
 
 export class Balance extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'balance';
-  protected static PLURAL_NAME = 'balances';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": [], "path": "shopify_payments/balance.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "balance",
+      "plural": "balances"
+    }
   ];
 
   public static async all(
@@ -28,7 +32,7 @@ export class Balance extends Base {
       session,
       ...otherArgs
     }: AllArgs
-  ): Promise<Balance[]> {
+  ): Promise<FindAllResponse<Balance>> {
     const response = await this.baseFind<Balance>({
       session: session,
       urlIds: {},
@@ -38,4 +42,5 @@ export class Balance extends Base {
     return response;
   }
 
+  public balance: {[key: string]: unknown}[] | null;
 }

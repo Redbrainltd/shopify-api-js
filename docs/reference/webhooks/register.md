@@ -1,6 +1,10 @@
 # shopify.webhooks.register
 
-Registers all of the configured handlers using [`webhooks.addHandlers`](./addHandlers.md) with Shopify.
+Registers all of the configured handlers for shop-specific webhooks using [`webhooks.addHandlers`](./addHandlers.md) with Shopify.  You can safely call this method every time a shop logs in, as it will add, update, or remove subscriptions as necessary so that all configured handlers are registered. In most cases, you should use app-specific webhooks:
+
+[App-specific vs shop-specific webhooks](https://shopify.dev/docs/apps/build/webhooks/subscribe#app-specific-vs-shop-specific-subscriptions).
+
+If you use only app-specific webhooks, you do not need to use `shopify.webhooks.register`. 
 
 You can safely call this method every time a shop logs in, as it will add, update, or remove subscriptions as necessary so that all configured handlers are registered.
 
@@ -53,11 +57,23 @@ Returns an object containing a list of results, indexed by topic. Each entry in 
 
 Whether the registration was successful.
 
+### deliveryMethod
+
+`string`
+
+The configured delivery method for the registered webhook.
+
 ### result
 
 `array`
 
 The body from the Shopify request to register the webhook.
+
+### operation
+
+`WebhookOperation`
+
+Which operation was performed to obtain this result.
 
 > **Note**: This object will only contain results for a handler if any of its information was updated with Shopify.
 

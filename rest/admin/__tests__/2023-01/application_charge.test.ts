@@ -3,21 +3,12 @@
 ***********************************************************************************************************************/
 
 import {Session} from '../../../../lib/session/session';
-import {testConfig, queueMockResponse} from '../../../../lib/__tests__/test-helper';
+import {queueMockResponse} from '../../../../lib/__tests__/test-helper';
+import {testConfig} from '../../../../lib/__tests__/test-config';
 import {ApiVersion} from '../../../../lib/types';
-import {shopifyApi, Shopify} from '../../../../lib';
+import {shopifyApi} from '../../../../lib';
 
 import {restResources} from '../../2023-01';
-
-let shopify: Shopify<typeof restResources>;
-
-beforeEach(() => {
-  shopify = shopifyApi({
-    ...testConfig,
-    apiVersion: ApiVersion.January23,
-    restResources,
-  });
-});
 
 describe('ApplicationCharge resource', () => {
   const domain = 'test-shop.myshopify.io';
@@ -31,7 +22,11 @@ describe('ApplicationCharge resource', () => {
   session.accessToken = 'this_is_a_test_token';
 
   it('test_1', async () => {
-    queueMockResponse(JSON.stringify({"application_charge": {"id": 1017262349, "name": "Super Duper Expensive action", "api_client_id": 755357713, "price": "100.00", "status": "pending", "return_url": "http://super-duper.shopifyapps.com/", "test": true, "created_at": "2023-01-03T13:03:09-05:00", "updated_at": "2023-01-03T13:03:09-05:00", "charge_type": null, "decorated_return_url": "http://super-duper.shopifyapps.com/?charge_id=1017262349", "confirmation_url": "https://jsmith.myshopify.com/admin/charges/755357713/1017262349/ApplicationCharge/confirm_application_charge?signature=BAh7BzoHaWRpBA0xojw6EmF1dG9fYWN0aXZhdGVU--ea73480c6bd64f4002e70c5f128c1623aaa7991e"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.January23, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"application_charge": {"id": 1017262349, "name": "Super Duper Expensive action", "api_client_id": 755357713, "price": "100.00", "status": "pending", "return_url": "http://super-duper.shopifyapps.com/", "test": true, "created_at": "2024-01-02T09:01:11-05:00", "updated_at": "2024-01-02T09:01:11-05:00", "currency": "USD", "charge_type": null, "decorated_return_url": "http://super-duper.shopifyapps.com/?charge_id=1017262349", "confirmation_url": "https://jsmith.myshopify.com/admin/charges/755357713/1017262349/ApplicationCharge/confirm_application_charge?signature=BAh7BzoHaWRpBA0xojw6EmF1dG9fYWN0aXZhdGVU--baad61b6ba1e9fbbbc4aea9da6f25c2b49058185"}}));
 
     const application_charge = new shopify.rest.ApplicationCharge({session: session});
     application_charge.name = "Super Duper Expensive action";
@@ -51,7 +46,11 @@ describe('ApplicationCharge resource', () => {
   });
 
   it('test_2', async () => {
-    queueMockResponse(JSON.stringify({"application_charge": {"id": 1017262351, "name": "Super Duper Expensive action", "api_client_id": 755357713, "price": "100.00", "status": "pending", "return_url": "http://super-duper.shopifyapps.com/", "test": null, "created_at": "2023-01-03T13:03:15-05:00", "updated_at": "2023-01-03T13:03:15-05:00", "charge_type": null, "decorated_return_url": "http://super-duper.shopifyapps.com/?charge_id=1017262351", "confirmation_url": "https://jsmith.myshopify.com/admin/charges/755357713/1017262351/ApplicationCharge/confirm_application_charge?signature=BAh7BzoHaWRpBA8xojw6EmF1dG9fYWN0aXZhdGVU--9dad4a7611bec2f70cd0db8cc9157e15360188f0"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.January23, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"application_charge": {"id": 1017262350, "name": "Super Duper Expensive action", "api_client_id": 755357713, "price": "100.00", "status": "pending", "return_url": "http://super-duper.shopifyapps.com/", "test": null, "created_at": "2024-01-02T09:01:12-05:00", "updated_at": "2024-01-02T09:01:12-05:00", "currency": "USD", "charge_type": null, "decorated_return_url": "http://super-duper.shopifyapps.com/?charge_id=1017262350", "confirmation_url": "https://jsmith.myshopify.com/admin/charges/755357713/1017262350/ApplicationCharge/confirm_application_charge?signature=BAh7BzoHaWRpBA4xojw6EmF1dG9fYWN0aXZhdGVU--dd1c1e6ab75e22d48ed7d8688b95d1240c8c6760"}}));
 
     const application_charge = new shopify.rest.ApplicationCharge({session: session});
     application_charge.name = "Super Duper Expensive action";
@@ -70,7 +69,11 @@ describe('ApplicationCharge resource', () => {
   });
 
   it('test_3', async () => {
-    queueMockResponse(JSON.stringify({"application_charges": [{"id": 1017262346, "name": "Create me a logo", "api_client_id": 755357713, "price": "123.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2023-01-03T12:56:35-05:00", "updated_at": "2023-01-03T12:56:35-05:00", "charge_type": "brokered_service", "decorated_return_url": "http://google.com?charge_id=1017262346"}, {"id": 556467234, "name": "Green theme", "api_client_id": 755357713, "price": "120.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2023-01-03T12:56:35-05:00", "updated_at": "2023-01-03T12:56:35-05:00", "charge_type": "theme", "decorated_return_url": "http://google.com?charge_id=556467234"}, {"id": 675931192, "name": "iPod Cleaning", "api_client_id": 755357713, "price": "5.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2023-01-03T12:56:35-05:00", "updated_at": "2023-01-03T12:56:35-05:00", "charge_type": null, "decorated_return_url": "http://google.com?charge_id=675931192"}]}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.January23, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"application_charges": [{"id": 556467234, "name": "Green theme", "api_client_id": 755357713, "price": "120.00", "status": "accepted", "return_url": "http://google.com", "test": null, "external_id": null, "created_at": "2024-01-02T08:59:11-05:00", "updated_at": "2024-01-02T08:59:11-05:00", "currency": "USD", "charge_type": "theme", "decorated_return_url": "http://google.com?charge_id=556467234"}, {"id": 675931192, "name": "iPod Cleaning", "api_client_id": 755357713, "price": "5.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2024-01-02T08:59:11-05:00", "updated_at": "2024-01-02T08:59:11-05:00", "currency": "USD", "charge_type": null, "decorated_return_url": "http://google.com?charge_id=675931192"}, {"id": 1017262346, "name": "Create me a logo", "api_client_id": 755357713, "price": "123.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2024-01-02T08:59:11-05:00", "updated_at": "2024-01-02T08:59:11-05:00", "currency": "USD", "charge_type": "brokered_service", "decorated_return_url": "http://google.com?charge_id=1017262346"}]}));
 
     await shopify.rest.ApplicationCharge.all({
       session: session,
@@ -87,7 +90,11 @@ describe('ApplicationCharge resource', () => {
   });
 
   it('test_4', async () => {
-    queueMockResponse(JSON.stringify({"application_charges": [{"id": 675931192, "name": "iPod Cleaning", "api_client_id": 755357713, "price": "5.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2023-01-03T12:56:35-05:00", "updated_at": "2023-01-03T12:56:35-05:00", "charge_type": null, "decorated_return_url": "http://google.com?charge_id=675931192"}, {"id": 1017262346, "name": "Create me a logo", "api_client_id": 755357713, "price": "123.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2023-01-03T12:56:35-05:00", "updated_at": "2023-01-03T12:56:35-05:00", "charge_type": "brokered_service", "decorated_return_url": "http://google.com?charge_id=1017262346"}]}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.January23, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"application_charges": [{"id": 675931192, "name": "iPod Cleaning", "api_client_id": 755357713, "price": "5.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2024-01-02T08:59:11-05:00", "updated_at": "2024-01-02T08:59:11-05:00", "currency": "USD", "charge_type": null, "decorated_return_url": "http://google.com?charge_id=675931192"}, {"id": 1017262346, "name": "Create me a logo", "api_client_id": 755357713, "price": "123.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2024-01-02T08:59:11-05:00", "updated_at": "2024-01-02T08:59:11-05:00", "currency": "USD", "charge_type": "brokered_service", "decorated_return_url": "http://google.com?charge_id=1017262346"}]}));
 
     await shopify.rest.ApplicationCharge.all({
       session: session,
@@ -105,7 +112,11 @@ describe('ApplicationCharge resource', () => {
   });
 
   it('test_5', async () => {
-    queueMockResponse(JSON.stringify({"application_charge": {"id": 675931192, "name": "iPod Cleaning", "api_client_id": 755357713, "price": "5.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2023-01-03T12:56:35-05:00", "updated_at": "2023-01-03T12:56:35-05:00", "charge_type": null, "decorated_return_url": "http://google.com?charge_id=675931192"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.January23, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"application_charge": {"id": 675931192, "name": "iPod Cleaning", "api_client_id": 755357713, "price": "5.00", "status": "accepted", "return_url": "http://google.com", "test": null, "created_at": "2024-01-02T08:59:11-05:00", "updated_at": "2024-01-02T08:59:11-05:00", "currency": "USD", "charge_type": null, "decorated_return_url": "http://google.com?charge_id=675931192"}}));
 
     await shopify.rest.ApplicationCharge.find({
       session: session,

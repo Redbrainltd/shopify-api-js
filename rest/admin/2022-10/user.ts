@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -23,16 +23,20 @@ interface CurrentArgs {
 }
 
 export class User extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'user';
-  protected static PLURAL_NAME = 'users';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "current", "ids": [], "path": "users/current.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "users.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "users/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "user",
+      "plural": "users"
+    }
   ];
 
   public static async find(
@@ -43,10 +47,11 @@ export class User extends Base {
   ): Promise<User | null> {
     const result = await this.baseFind<User>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -56,7 +61,7 @@ export class User extends Base {
       page_info = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<User[]> {
+  ): Promise<FindAllResponse<User>> {
     const response = await this.baseFind<User>({
       session: session,
       urlIds: {},
@@ -89,7 +94,7 @@ export class User extends Base {
   public bio: string | null;
   public email: string | null;
   public first_name: string | null;
-  public id: number | null;
+  public id: string | null;
   public im: string | null;
   public last_name: string | null;
   public locale: string | null;

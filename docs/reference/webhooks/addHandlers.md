@@ -1,6 +1,10 @@
 # shopify.webhooks.addHandlers
 
-Adds webhook handlers to the library registry, allowing you to register them with Shopify and process HTTP webhook requests from Shopify.
+Add shop-specific webhook handlers to the library registry, allowing you to register webhooks and process HTTP webhook requests from Shopify. In most cases, you should use app-specific webhooks:
+
+[App-specific vs shop-specific webhooks](https://shopify.dev/docs/apps/build/webhooks/subscribe#app-specific-vs-shop-specific-subscriptions)
+
+If you use only app-specific webhooks, you do not need to use `shopify.webhooks.addHandlers`.
 
 See the documentation for [the full list](https://shopify.dev/docs/api/admin-graphql/latest/enums/WebhookSubscriptionTopic) of accepted topics.
 
@@ -21,12 +25,12 @@ const handleWebhookRequest = async (
   webhookId: string,
   apiVersion: string,
 ) => {
-  const sessionId = shopify.session.getOfflineId({shop});
+  const sessionId = shopify.session.getOfflineId(shop);
 
   // Fetch the session from storage and process the webhook event
 };
 
-await shopify.webhooks.addHandlers({
+shopify.webhooks.addHandlers({
   PRODUCTS_CREATE: [
     {
       deliveryMethod: DeliveryMethod.Http,
@@ -64,6 +68,11 @@ Fields to be included in the callback, defaulting to including all of them.
 
 Namespaces to be included in the callback, defaulting to including all of them.
 
+### subTopic
+`string` | Deprecated
+
+Deprecated. Webhook sub-topics are an extra level of grouping available for some webhook topics.
+
 ## Delivery method-specific parameters
 
 ### Http
@@ -79,12 +88,6 @@ The path for this handler within your app. The app's host will be automatically 
 `WebhookHandlerFunction` | :exclamation: required
 
 The `async` callback to call when a shop triggers a `topic` event.
-
-#### privateMetafieldNamespaces
-
-`string[]` | Defaults to `[]`
-
-Namespaces to be included in the callback, defaulting to all of them.
 
 ### EventBridge
 

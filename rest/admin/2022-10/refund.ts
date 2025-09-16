@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -33,19 +33,23 @@ interface CalculateArgs {
 }
 
 export class Refund extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'refund';
-  protected static PLURAL_NAME = 'refunds';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {
     "transactions": Transaction
   };
-  protected static PATHS: ResourcePath[] = [
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": ["order_id"], "path": "orders/<order_id>/refunds.json"},
     {"http_method": "get", "operation": "get", "ids": ["order_id", "id"], "path": "orders/<order_id>/refunds/<id>.json"},
     {"http_method": "post", "operation": "calculate", "ids": ["order_id"], "path": "orders/<order_id>/refunds/calculate.json"},
     {"http_method": "post", "operation": "post", "ids": ["order_id"], "path": "orders/<order_id>/refunds.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "refund",
+      "plural": "refunds"
+    }
   ];
 
   public static async find(
@@ -59,10 +63,11 @@ export class Refund extends Base {
   ): Promise<Refund | null> {
     const result = await this.baseFind<Refund>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "order_id": order_id},
       params: {"fields": fields, "in_shop_currency": in_shop_currency},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -74,7 +79,7 @@ export class Refund extends Base {
       in_shop_currency = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Refund[]> {
+  ): Promise<FindAllResponse<Refund>> {
     const response = await this.baseFind<Refund>({
       session: session,
       urlIds: {"order_id": order_id},
@@ -108,14 +113,14 @@ export class Refund extends Base {
 
   public created_at: string | null;
   public duties: {[key: string]: unknown}[] | null;
-  public id: number | null;
+  public id: string | null;
   public note: string | null;
   public order_adjustments: {[key: string]: unknown}[] | null;
-  public order_id: number | null;
+  public order_id: string | null;
   public processed_at: string | null;
   public refund_duties: {[key: string]: unknown}[] | null;
   public refund_line_items: {[key: string]: unknown}[] | null;
   public restock: boolean | null;
   public transactions: Transaction[] | null | {[key: string]: any};
-  public user_id: number | null;
+  public user_id: string | null;
 }

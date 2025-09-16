@@ -3,21 +3,12 @@
 ***********************************************************************************************************************/
 
 import {Session} from '../../../../lib/session/session';
-import {testConfig, queueMockResponse} from '../../../../lib/__tests__/test-helper';
+import {queueMockResponse} from '../../../../lib/__tests__/test-helper';
+import {testConfig} from '../../../../lib/__tests__/test-config';
 import {ApiVersion} from '../../../../lib/types';
-import {shopifyApi, Shopify} from '../../../../lib';
+import {shopifyApi} from '../../../../lib';
 
 import {restResources} from '../../2022-10';
-
-let shopify: Shopify<typeof restResources>;
-
-beforeEach(() => {
-  shopify = shopifyApi({
-    ...testConfig,
-    apiVersion: ApiVersion.October22,
-    restResources,
-  });
-});
 
 describe('PriceRule resource', () => {
   const domain = 'test-shop.myshopify.io';
@@ -31,7 +22,11 @@ describe('PriceRule resource', () => {
   session.accessToken = 'this_is_a_test_token';
 
   it('test_1', async () => {
-    queueMockResponse(JSON.stringify({"price_rule": {"id": 996341481, "value_type": "percentage", "value": "-100.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "entitled", "allocation_method": "each", "allocation_limit": 3, "once_per_customer": false, "usage_limit": null, "starts_at": "2018-03-21T20:00:00-04:00", "ends_at": null, "created_at": "2023-01-03T12:06:59-05:00", "updated_at": "2023-01-03T12:06:59-05:00", "entitled_product_ids": [921728736], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [841564295], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": 2, "entitled_quantity": 1}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "Buy2iPodsGetiPodTouchForFree", "admin_graphql_api_id": "gid://shopify/PriceRule/996341481"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"price_rule": {"id": 996606715, "value_type": "percentage", "value": "-100.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "entitled", "allocation_method": "each", "allocation_limit": 3, "once_per_customer": false, "usage_limit": null, "starts_at": "2018-03-21T20:00:00-04:00", "ends_at": null, "created_at": "2023-07-11T18:37:53-04:00", "updated_at": "2023-07-11T18:37:53-04:00", "entitled_product_ids": [921728736], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [841564295], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": 2, "entitled_quantity": 1}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "Buy2iPodsGetiPodTouchForFree", "admin_graphql_api_id": "gid://shopify/PriceRule/996606715"}}));
 
     const price_rule = new shopify.rest.PriceRule({session: session});
     price_rule.title = "Buy2iPodsGetiPodTouchForFree";
@@ -66,7 +61,11 @@ describe('PriceRule resource', () => {
   });
 
   it('test_2', async () => {
-    queueMockResponse(JSON.stringify({"price_rule": {"id": 996341478, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2017-01-19T12:59:10-05:00", "ends_at": null, "created_at": "2023-01-03T12:06:46-05:00", "updated_at": "2023-01-03T12:06:46-05:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "SUMMERSALE10OFF", "admin_graphql_api_id": "gid://shopify/PriceRule/996341478"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"price_rule": {"id": 996606716, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2017-01-19T12:59:10-05:00", "ends_at": null, "created_at": "2023-07-11T18:37:56-04:00", "updated_at": "2023-07-11T18:37:56-04:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "SUMMERSALE10OFF", "admin_graphql_api_id": "gid://shopify/PriceRule/996606716"}}));
 
     const price_rule = new shopify.rest.PriceRule({session: session});
     price_rule.title = "SUMMERSALE10OFF";
@@ -90,7 +89,11 @@ describe('PriceRule resource', () => {
   });
 
   it('test_3', async () => {
-    queueMockResponse(JSON.stringify({"price_rule": {"id": 996341480, "value_type": "percentage", "value": "-15.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "entitled", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2017-01-19T12:59:10-05:00", "ends_at": null, "created_at": "2023-01-03T12:06:56-05:00", "updated_at": "2023-01-03T12:06:56-05:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [841564295], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "15OFFCOLLECTION", "admin_graphql_api_id": "gid://shopify/PriceRule/996341480"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"price_rule": {"id": 996606714, "value_type": "percentage", "value": "-15.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "entitled", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2017-01-19T12:59:10-05:00", "ends_at": null, "created_at": "2023-07-11T18:37:45-04:00", "updated_at": "2023-07-11T18:37:45-04:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [841564295], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "15OFFCOLLECTION", "admin_graphql_api_id": "gid://shopify/PriceRule/996606714"}}));
 
     const price_rule = new shopify.rest.PriceRule({session: session});
     price_rule.title = "15OFFCOLLECTION";
@@ -117,7 +120,11 @@ describe('PriceRule resource', () => {
   });
 
   it('test_4', async () => {
-    queueMockResponse(JSON.stringify({"price_rule": {"id": 996341479, "value_type": "percentage", "value": "-100.0", "customer_selection": "all", "target_type": "shipping_line", "target_selection": "all", "allocation_method": "each", "allocation_limit": null, "once_per_customer": false, "usage_limit": 20, "starts_at": "2017-01-19T12:59:10-05:00", "ends_at": null, "created_at": "2023-01-03T12:06:52-05:00", "updated_at": "2023-01-03T12:06:52-05:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": {"greater_than_or_equal_to": "50.0"}, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "FREESHIPPING", "admin_graphql_api_id": "gid://shopify/PriceRule/996341479"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"price_rule": {"id": 996606713, "value_type": "percentage", "value": "-100.0", "customer_selection": "all", "target_type": "shipping_line", "target_selection": "all", "allocation_method": "each", "allocation_limit": null, "once_per_customer": false, "usage_limit": 20, "starts_at": "2017-01-19T12:59:10-05:00", "ends_at": null, "created_at": "2023-07-11T18:37:41-04:00", "updated_at": "2023-07-11T18:37:41-04:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": {"greater_than_or_equal_to": "50.0"}, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "FREESHIPPING", "admin_graphql_api_id": "gid://shopify/PriceRule/996606713"}}));
 
     const price_rule = new shopify.rest.PriceRule({session: session});
     price_rule.title = "FREESHIPPING";
@@ -145,7 +152,11 @@ describe('PriceRule resource', () => {
   });
 
   it('test_5', async () => {
-    queueMockResponse(JSON.stringify({"price_rules": [{"id": 507328175, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2022-12-28T12:05:09-05:00", "ends_at": "2023-01-09T12:05:09-05:00", "created_at": "2023-01-03T12:05:09-05:00", "updated_at": "2023-01-03T12:05:09-05:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "prerequisite_saved_search_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "title": "SUMMERSALE10OFF", "admin_graphql_api_id": "gid://shopify/PriceRule/507328175"}, {"id": 106886544, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2023-01-01T12:05:09-05:00", "ends_at": "2023-01-05T12:05:09-05:00", "created_at": "2023-01-03T12:05:09-05:00", "updated_at": "2023-01-03T12:05:09-05:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "prerequisite_saved_search_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "title": "TENOFF", "admin_graphql_api_id": "gid://shopify/PriceRule/106886544"}]}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"price_rules": [{"id": 507328175, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2023-07-05T18:32:46-04:00", "ends_at": "2023-07-17T18:32:46-04:00", "created_at": "2023-07-11T18:32:46-04:00", "updated_at": "2023-07-11T18:32:46-04:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "prerequisite_saved_search_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "title": "SUMMERSALE10OFF", "admin_graphql_api_id": "gid://shopify/PriceRule/507328175"}, {"id": 106886544, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2023-07-09T18:32:46-04:00", "ends_at": "2023-07-13T18:32:46-04:00", "created_at": "2023-07-11T18:32:46-04:00", "updated_at": "2023-07-11T18:32:46-04:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "prerequisite_saved_search_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "title": "TENOFF", "admin_graphql_api_id": "gid://shopify/PriceRule/106886544"}]}));
 
     await shopify.rest.PriceRule.all({
       session: session,
@@ -162,7 +173,11 @@ describe('PriceRule resource', () => {
   });
 
   it('test_6', async () => {
-    queueMockResponse(JSON.stringify({"price_rules": [{"id": 507328175, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2022-12-28T12:05:09-05:00", "ends_at": "2023-01-09T12:05:09-05:00", "created_at": "2023-01-03T12:05:09-05:00", "updated_at": "2023-01-03T12:05:09-05:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "prerequisite_saved_search_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "title": "SUMMERSALE10OFF", "admin_graphql_api_id": "gid://shopify/PriceRule/507328175"}]}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"price_rules": [{"id": 507328175, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2023-07-05T18:32:46-04:00", "ends_at": "2023-07-17T18:32:46-04:00", "created_at": "2023-07-11T18:32:46-04:00", "updated_at": "2023-07-11T18:32:46-04:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "prerequisite_saved_search_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "title": "SUMMERSALE10OFF", "admin_graphql_api_id": "gid://shopify/PriceRule/507328175"}]}));
 
     await shopify.rest.PriceRule.all({
       session: session,
@@ -180,7 +195,11 @@ describe('PriceRule resource', () => {
   });
 
   it('test_7', async () => {
-    queueMockResponse(JSON.stringify({"price_rule": {"id": 507328175, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2022-12-28T12:05:09-05:00", "ends_at": "2023-01-09T12:05:09-05:00", "created_at": "2023-01-03T12:05:09-05:00", "updated_at": "2023-01-03T12:06:55-05:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "WINTER SALE", "admin_graphql_api_id": "gid://shopify/PriceRule/507328175"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"price_rule": {"id": 507328175, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2023-07-05T18:32:46-04:00", "ends_at": "2023-07-17T18:32:46-04:00", "created_at": "2023-07-11T18:32:46-04:00", "updated_at": "2023-07-11T18:37:42-04:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "WINTER SALE", "admin_graphql_api_id": "gid://shopify/PriceRule/507328175"}}));
 
     const price_rule = new shopify.rest.PriceRule({session: session});
     price_rule.id = 507328175;
@@ -198,7 +217,11 @@ describe('PriceRule resource', () => {
   });
 
   it('test_8', async () => {
-    queueMockResponse(JSON.stringify({"price_rule": {"id": 507328175, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2022-12-28T12:05:09-05:00", "ends_at": "2023-01-09T12:05:09-05:00", "created_at": "2023-01-03T12:05:09-05:00", "updated_at": "2023-01-03T12:05:09-05:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "SUMMERSALE10OFF", "admin_graphql_api_id": "gid://shopify/PriceRule/507328175"}}));
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
+    queueMockResponse(JSON.stringify({"price_rule": {"id": 507328175, "value_type": "fixed_amount", "value": "-10.0", "customer_selection": "all", "target_type": "line_item", "target_selection": "all", "allocation_method": "across", "allocation_limit": null, "once_per_customer": false, "usage_limit": null, "starts_at": "2023-07-05T18:32:46-04:00", "ends_at": "2023-07-17T18:32:46-04:00", "created_at": "2023-07-11T18:32:46-04:00", "updated_at": "2023-07-11T18:32:46-04:00", "entitled_product_ids": [], "entitled_variant_ids": [], "entitled_collection_ids": [], "entitled_country_ids": [], "prerequisite_product_ids": [], "prerequisite_variant_ids": [], "prerequisite_collection_ids": [], "customer_segment_prerequisite_ids": [], "prerequisite_customer_ids": [], "prerequisite_subtotal_range": null, "prerequisite_quantity_range": null, "prerequisite_shipping_price_range": null, "prerequisite_to_entitlement_quantity_ratio": {"prerequisite_quantity": null, "entitled_quantity": null}, "prerequisite_to_entitlement_purchase": {"prerequisite_amount": null}, "title": "SUMMERSALE10OFF", "admin_graphql_api_id": "gid://shopify/PriceRule/507328175"}}));
 
     await shopify.rest.PriceRule.find({
       session: session,
@@ -216,6 +239,10 @@ describe('PriceRule resource', () => {
   });
 
   it('test_9', async () => {
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
     queueMockResponse(JSON.stringify({}));
 
     await shopify.rest.PriceRule.delete({
@@ -234,6 +261,10 @@ describe('PriceRule resource', () => {
   });
 
   it('test_10', async () => {
+    const shopify = shopifyApi(
+      testConfig({apiVersion: ApiVersion.October22, restResources}),
+    );
+
     queueMockResponse(JSON.stringify({"count": 2}));
 
     await shopify.rest.PriceRule.count({

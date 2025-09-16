@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -51,6 +51,7 @@ interface SearchArgs {
   query?: unknown;
   limit?: unknown;
   fields?: unknown;
+  returnFullResponse?: boolean;
 }
 interface AccountActivationUrlArgs {
   [key: string]: unknown;
@@ -62,15 +63,13 @@ interface SendInviteArgs {
 }
 
 export class Customer extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'customer';
-  protected static PLURAL_NAME = 'customers';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {
     "metafield": Metafield
   };
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "customers/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "customers/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "customers.json"},
@@ -82,6 +81,12 @@ export class Customer extends Base {
     {"http_method": "post", "operation": "send_invite", "ids": ["id"], "path": "customers/<id>/send_invite.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "customers/<id>.json"}
   ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "customer",
+      "plural": "customers"
+    }
+  ];
 
   public static async find(
     {
@@ -92,10 +97,11 @@ export class Customer extends Base {
   ): Promise<Customer | null> {
     const result = await this.baseFind<Customer>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -128,7 +134,7 @@ export class Customer extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Customer[]> {
+  ): Promise<FindAllResponse<Customer>> {
     const response = await this.baseFind<Customer>({
       session: session,
       urlIds: {},
@@ -189,8 +195,9 @@ export class Customer extends Base {
       query = null,
       limit = null,
       fields = null,
+      returnFullResponse = false,
       ...otherArgs
-    }: SearchArgs
+    }: SearchArgs,
   ): Promise<unknown> {
     const response = await this.request<Customer>({
       http_method: "get",
@@ -202,7 +209,7 @@ export class Customer extends Base {
       entity: null,
     });
 
-    return response ? response.body : null;
+    return returnFullResponse ? response : response?.body;
   }
 
   public async account_activation_url(
@@ -252,9 +259,9 @@ export class Customer extends Base {
   public email: string | null;
   public email_marketing_consent: {[key: string]: unknown} | null;
   public first_name: string | null;
-  public id: number | null;
+  public id: string | null;
   public last_name: string | null;
-  public last_order_id: number | null;
+  public last_order_id: string | null;
   public last_order_name: string | null;
   public marketing_opt_in_level: string | null;
   public metafield: Metafield | null | {[key: string]: any};

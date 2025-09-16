@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -63,15 +63,13 @@ interface TagsArgs {
 }
 
 export class Article extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'article';
-  protected static PLURAL_NAME = 'articles';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {
     "metafields": Metafield
   };
-  protected static PATHS: ResourcePath[] = [
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["blog_id", "id"], "path": "blogs/<blog_id>/articles/<id>.json"},
     {"http_method": "get", "operation": "authors", "ids": [], "path": "articles/authors.json"},
     {"http_method": "get", "operation": "count", "ids": ["blog_id"], "path": "blogs/<blog_id>/articles/count.json"},
@@ -81,6 +79,12 @@ export class Article extends Base {
     {"http_method": "get", "operation": "tags", "ids": ["blog_id"], "path": "blogs/<blog_id>/articles/tags.json"},
     {"http_method": "post", "operation": "post", "ids": ["blog_id"], "path": "blogs/<blog_id>/articles.json"},
     {"http_method": "put", "operation": "put", "ids": ["blog_id", "id"], "path": "blogs/<blog_id>/articles/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "article",
+      "plural": "articles"
+    }
   ];
 
   public static async find(
@@ -93,10 +97,11 @@ export class Article extends Base {
   ): Promise<Article | null> {
     const result = await this.baseFind<Article>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "blog_id": blog_id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -136,7 +141,7 @@ export class Article extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Article[]> {
+  ): Promise<FindAllResponse<Article>> {
     const response = await this.baseFind<Article>({
       session: session,
       urlIds: {"blog_id": blog_id},
@@ -215,11 +220,11 @@ export class Article extends Base {
   }
 
   public author: string | null;
-  public blog_id: number | null;
+  public blog_id: string | null;
   public body_html: string | null;
   public created_at: string | null;
   public handle: string | null;
-  public id: number | null;
+  public id: string | null;
   public image: string | {[key: string]: unknown} | null;
   public metafields: Metafield[] | null | {[key: string]: any};
   public published: boolean | null;
@@ -229,5 +234,5 @@ export class Article extends Base {
   public template_suffix: string | null;
   public title: string | null;
   public updated_at: string | null;
-  public user_id: number | null;
+  public user_id: string | null;
 }

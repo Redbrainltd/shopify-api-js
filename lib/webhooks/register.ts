@@ -1,15 +1,12 @@
-import {
-  graphqlClientClass,
-  GraphqlClient,
-} from '../clients/graphql/graphql_client';
-import { InvalidDeliveryMethodError, ShopifyError } from '../error';
-import { logger } from '../logger';
-import { gdprTopics } from '../types';
-import { ConfigInterface } from '../base-types';
-import { Session } from '../session/session';
+import {graphqlClientClass, GraphqlClient} from '../clients/admin';
+import {InvalidDeliveryMethodError, ShopifyError} from '../error';
+import {logger} from '../logger';
+import {privacyTopics} from '../types';
+import {ConfigInterface} from '../base-types';
+import {Session} from '../session/session';
 
-import { addHostToCallbackUrl, getHandlers, handlerIdentifier } from './registry';
-import { queryTemplate } from './query-template';
+import {addHostToCallbackUrl, getHandlers, handlerIdentifier} from './registry';
+import {queryTemplate} from './query-template';
 import {
   WebhookRegistry,
   RegisterReturn,
@@ -54,7 +51,7 @@ export function register(
     session,
   }: RegisterParams): Promise<RegisterReturn> {
     const log = logger(config);
-    log.info('Registering webhooks', { shop: session.shop });
+    log.info('Registering webhooks', {shop: session.shop});
 
     const registerReturn: RegisterReturn = Object.keys(webhookRegistry).reduce(
       (acc: RegisterReturn, topic) => {
@@ -64,19 +61,21 @@ export function register(
       {},
     );
 
-    // const existingHandlers = await getExistingHandlers(config, session);
+    const existingHandlers = await getExistingHandlers(config, session);
 
-    // log.debug(
-    //   `Existing topics: [${Object.keys(existingHandlers).join(', ')}]`,
-    //   { shop: session.shop },
-    // );
+    log.debug(
+      `Existing topics: [${Object.keys(existingHandlers).join(', ')}]`,
+      {shop: session.shop},
+    );
+
+    // ** REDBRAIN PATCH ** disable removal of existing webhooks
 
     // for (const topic in webhookRegistry) {
     //   if (!Object.prototype.hasOwnProperty.call(webhookRegistry, topic)) {
     //     continue;
     //   }
 
-    //   if (gdprTopics.includes(topic)) {
+    //   if (privacyTopics.includes(topic)) {
     //     continue;
     //   }
 
@@ -88,30 +87,29 @@ export function register(
     //     handlers: getHandlers(webhookRegistry)(topic),
     //   });
 
-    //   // Remove this topic from the list of existing handlers so we have a list of leftovers
-    //   delete existingHandlers[topic];
-    // }
+      // Remove this topic from the list of existing handlers so we have a list of leftovers
+      delete existingHandlers[topic];
+    }
 
     // ** REDBRAIN PATCH ** disable removal of existing webhooks
-    log.info('REDBRAIN PATCH disabling webhook removal');
 
     // Delete any leftover handlers
-    //     for (const topic in existingHandlers) {
-    //       if (!Object.prototype.hasOwnProperty.call(existingHandlers, topic)) {
-    //         continue;
-    //       }
+    // for (const topic in existingHandlers) {
+    //   if (!Object.prototype.hasOwnProperty.call(existingHandlers, topic)) {
+    //     continue;
+    //   }
 
-    //       const GraphqlClient = graphqlClientClass({config});
-    //       const client = new GraphqlClient({session});
+    //   const GraphqlClient = graphqlClientClass({config});
+    //   const client = new GraphqlClient({session});
 
-    //       registerReturn[topic] = await runMutations({
-    //         config,
-    //         client,
-    //         topic,
-    //         handlers: existingHandlers[topic],
-    //         operation: WebhookOperation.Delete,
-    //       });
-    //     }
+    //   registerReturn[topic] = await runMutations({
+    //     config,
+    //     client,
+    //     topic,
+    //     handlers: existingHandlers[topic],
+    //     operation: WebhookOperation.Delete,
+    //   });
+    // }
 
     return registerReturn;
   };
@@ -121,8 +119,8 @@ async function getExistingHandlers(
   config: ConfigInterface,
   session: Session,
 ): Promise<WebhookRegistry> {
-  const GraphqlClient = graphqlClientClass({ config });
-  const client = new GraphqlClient({ session });
+  const GraphqlClient = graphqlClientClass({config});
+  const client = new GraphqlClient({session});
 
   const existingHandlers: WebhookRegistry = {};
 
@@ -131,22 +129,22 @@ async function getExistingHandlers(
   do {
     const query = buildCheckQuery(endCursor);
 
-    const response = await client.query<WebhookCheckResponse>({
-      data: query,
-    });
+    const response = await client.request<WebhookCheckResponse>(query);
 
-    response.body.data.webhookSubscriptions.edges.forEach((edge) => {
-      const handler = buildHandlerFromNode(edge);
+    response.data?.webhookSubscriptions?.edges.forEach(
+      (edge: WebhookCheckResponseNode) => {
+        const handler = buildHandlerFromNode(edge);
 
-      if (!existingHandlers[edge.node.topic]) {
-        existingHandlers[edge.node.topic] = [];
-      }
+        if (!existingHandlers[edge.node.topic]) {
+          existingHandlers[edge.node.topic] = [];
+        }
 
-      existingHandlers[edge.node.topic].push(handler);
-    });
+        existingHandlers[edge.node.topic].push(handler);
+      },
+    );
 
-    endCursor = response.body.data.webhookSubscriptions.pageInfo.endCursor;
-    hasNextPage = response.body.data.webhookSubscriptions.pageInfo.hasNextPage;
+    endCursor = response.data?.webhookSubscriptions?.pageInfo.endCursor!;
+    hasNextPage = response.data?.webhookSubscriptions?.pageInfo.hasNextPage!;
   } while (hasNextPage);
 
   return existingHandlers;
@@ -167,14 +165,10 @@ function buildHandlerFromNode(edge: WebhookCheckResponseNode): WebhookHandler {
     case 'WebhookHttpEndpoint':
       handler = {
         deliveryMethod: DeliveryMethod.Http,
-        privateMetafieldNamespaces: edge.node.privateMetafieldNamespaces,
         callbackUrl: endpoint.callbackUrl,
         // This is a dummy for now because we don't really care about it
-        callback: async () => { },
+        callback: async () => {},
       };
-
-      // This field only applies to HTTP webhooks
-      handler.privateMetafieldNamespaces?.sort();
       break;
     case 'WebhookEventBridgeEndpoint':
       handler = {
@@ -212,36 +206,34 @@ async function registerTopic({
 }: RegisterTopicParams): Promise<RegisterResult[]> {
   let registerResults: RegisterResult[] = [];
 
-  const { toCreate, toUpdate, toDelete } = categorizeHandlers(
+  const {toCreate, toUpdate, toDelete} = categorizeHandlers(
     config,
     existingHandlers,
     handlers,
   );
 
-  const GraphqlClient = graphqlClientClass({ config });
-  const client = new GraphqlClient({ session });
+  const GraphqlClient = graphqlClientClass({config});
+  const client = new GraphqlClient({session});
 
   let operation = WebhookOperation.Create;
   registerResults = registerResults.concat(
-    await runMutations({ config, client, topic, operation, handlers: toCreate }),
+    await runMutations({config, client, topic, operation, handlers: toCreate}),
   );
 
   operation = WebhookOperation.Update;
   registerResults = registerResults.concat(
-    await runMutations({ config, client, topic, operation, handlers: toUpdate }),
+    await runMutations({config, client, topic, operation, handlers: toUpdate}),
   );
 
   operation = WebhookOperation.Delete;
   registerResults = registerResults.concat(
-    await runMutations({ config, client, topic, operation, handlers: toDelete }),
+    await runMutations({config, client, topic, operation, handlers: toDelete}),
   );
 
   return registerResults;
 }
 
-interface HandlersByKey {
-  [key: string]: WebhookHandler;
-}
+type HandlersByKey = Record<string, WebhookHandler>;
 
 function categorizeHandlers(
   config: ConfigInterface,
@@ -260,7 +252,7 @@ function categorizeHandlers(
     {},
   );
 
-  const toCreate: HandlersByKey = { ...handlersByKey };
+  const toCreate: HandlersByKey = {...handlersByKey};
   const toUpdate: HandlersByKey = {};
   const toDelete: HandlersByKey = {};
   for (const existingKey in existingHandlersByKey) {
@@ -303,19 +295,8 @@ function areHandlerFieldsEqual(
     arr1.metafieldNamespaces || [],
     arr2.metafieldNamespaces || [],
   );
-  const privateMetafieldNamespacesEqual =
-    arr1.deliveryMethod !== DeliveryMethod.Http ||
-    arr2.deliveryMethod !== DeliveryMethod.Http ||
-    arraysEqual(
-      arr1.privateMetafieldNamespaces || [],
-      arr2.privateMetafieldNamespaces || [],
-    );
 
-  return (
-    includeFieldsEqual &&
-    metafieldNamespacesEqual &&
-    privateMetafieldNamespacesEqual
-  );
+  return includeFieldsEqual && metafieldNamespacesEqual;
 }
 
 function arraysEqual(arr1: any[], arr2: any[]): boolean {
@@ -343,7 +324,7 @@ async function runMutations({
 
   for (const handler of handlers) {
     registerResults.push(
-      await runMutation({ config, client, topic, handler, operation }),
+      await runMutation({config, client, topic, handler, operation}),
     );
   }
 
@@ -359,24 +340,26 @@ async function runMutation({
 }: RunMutationParams): Promise<RegisterResult> {
   let registerResult: RegisterResult;
 
-  logger(config).debug(`Running webhook mutation`, { topic, operation });
+  logger(config).debug(`Running webhook mutation`, {topic, operation});
 
   try {
     const query = buildMutation(config, topic, handler, operation);
 
-    const result = await client.query({ data: query });
+    const result = await client.request(query);
 
     registerResult = {
       deliveryMethod: handler.deliveryMethod,
-      success: isSuccess(result.body, handler, operation),
-      result: result.body,
+      success: isSuccess(result, handler, operation),
+      result,
+      operation,
     };
   } catch (error) {
     if (error instanceof InvalidDeliveryMethodError) {
       registerResult = {
         deliveryMethod: handler.deliveryMethod,
         success: false,
-        result: { message: error.message },
+        result: {message: error.message},
+        operation,
       };
     } else {
       throw error;
@@ -392,7 +375,7 @@ function buildMutation(
   handler: WebhookHandler,
   operation: WebhookOperation,
 ): string {
-  const params: { [key: string]: string } = {};
+  const params: Record<string, string> = {};
 
   let identifier: string;
   if (handler.id) {
@@ -434,20 +417,17 @@ function buildMutation(
     if (handler.metafieldNamespaces) {
       params.metafieldNamespaces = JSON.stringify(handler.metafieldNamespaces);
     }
-    if (
-      handler.deliveryMethod === DeliveryMethod.Http &&
-      handler.privateMetafieldNamespaces
-    ) {
-      params.privateMetafieldNamespaces = JSON.stringify(
-        handler.privateMetafieldNamespaces,
-      );
+
+    if (handler.subTopic) {
+      const subTopicString = `subTopic: "${handler.subTopic}",`;
+      mutationArguments.MUTATION_PARAMS = subTopicString;
     }
 
     const paramsString = Object.entries(params)
       .map(([key, value]) => `${key}: ${value}`)
       .join(', ');
 
-    mutationArguments.MUTATION_PARAMS = `webhookSubscription: {${paramsString}}`;
+    mutationArguments.MUTATION_PARAMS += `webhookSubscription: {${paramsString}}`;
   }
 
   return queryTemplate(TEMPLATE_MUTATION, mutationArguments);
@@ -493,12 +473,12 @@ function isSuccess(
 
   return Boolean(
     result.data &&
-    result.data[mutationName] &&
-    result.data[mutationName].userErrors.length === 0,
+      result.data[mutationName] &&
+      result.data[mutationName].userErrors.length === 0,
   );
 }
 
-export const TEMPLATE_GET_HANDLERS = `{
+export const TEMPLATE_GET_HANDLERS = `query shopifyApiReadWebhookSubscriptions {
   webhookSubscriptions(
     first: 250,
     after: {{END_CURSOR}},
@@ -509,7 +489,6 @@ export const TEMPLATE_GET_HANDLERS = `{
         topic
         includeFields
         metafieldNamespaces
-        privateMetafieldNamespaces
         endpoint {
           __typename
           ... on WebhookHttpEndpoint {
@@ -533,7 +512,7 @@ export const TEMPLATE_GET_HANDLERS = `{
 }`;
 
 export const TEMPLATE_MUTATION = `
-  mutation webhookSubscription {
+  mutation shopifyApiCreateWebhookSubscription {
     {{MUTATION_NAME}}(
       {{IDENTIFIER}},
       {{MUTATION_PARAMS}}

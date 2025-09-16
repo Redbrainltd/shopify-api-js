@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -38,13 +38,11 @@ interface CustomersArgs {
 }
 
 export class CustomerSavedSearch extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'customer_saved_search';
-  protected static PLURAL_NAME = 'customer_saved_searches';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "customer_saved_searches/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "customer_saved_searches/count.json"},
     {"http_method": "get", "operation": "customers", "ids": ["id"], "path": "customer_saved_searches/<id>/customers.json"},
@@ -52,6 +50,12 @@ export class CustomerSavedSearch extends Base {
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "customer_saved_searches/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "customer_saved_searches.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "customer_saved_searches/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "customer_saved_search",
+      "plural": "customer_saved_searches"
+    }
   ];
 
   public static async find(
@@ -63,10 +67,11 @@ export class CustomerSavedSearch extends Base {
   ): Promise<CustomerSavedSearch | null> {
     const result = await this.baseFind<CustomerSavedSearch>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -94,7 +99,7 @@ export class CustomerSavedSearch extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<CustomerSavedSearch[]> {
+  ): Promise<FindAllResponse<CustomerSavedSearch>> {
     const response = await this.baseFind<CustomerSavedSearch>({
       session: session,
       urlIds: {},
@@ -148,7 +153,7 @@ export class CustomerSavedSearch extends Base {
   }
 
   public created_at: string | null;
-  public id: number | null;
+  public id: string | null;
   public name: string | null;
   public query: string | null;
   public updated_at: string | null;

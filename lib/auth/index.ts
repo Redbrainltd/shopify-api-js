@@ -1,19 +1,43 @@
 import {ConfigInterface} from '../base-types';
 
-import {begin, callback} from './oauth/oauth';
-import {nonce} from './oauth/nonce';
-import {safeCompare} from './oauth/safe-compare';
-import {getEmbeddedAppUrl, buildEmbeddedAppUrl} from './get-embedded-app-url';
+import {OAuthBegin, OAuthCallback, begin, callback} from './oauth/oauth';
+import {Nonce, nonce} from './oauth/nonce';
+import {SafeCompare, safeCompare} from './oauth/safe-compare';
+import {
+  getEmbeddedAppUrl,
+  buildEmbeddedAppUrl,
+  GetEmbeddedAppUrl,
+  BuildEmbeddedAppUrl,
+} from './get-embedded-app-url';
+import {TokenExchange, tokenExchange} from './oauth/token-exchange';
+import {ClientCredentials, clientCredentials} from './oauth/client-credentials';
 
-export function shopifyAuth(config: ConfigInterface) {
-  return {
+export {AuthScopes} from './scopes';
+
+export function shopifyAuth<Config extends ConfigInterface>(
+  config: Config,
+): ShopifyAuth {
+  const shopify = {
     begin: begin(config),
     callback: callback(config),
     nonce,
     safeCompare,
     getEmbeddedAppUrl: getEmbeddedAppUrl(config),
     buildEmbeddedAppUrl: buildEmbeddedAppUrl(config),
-  };
+    tokenExchange: tokenExchange(config),
+    clientCredentials: clientCredentials(config),
+  } as ShopifyAuth;
+
+  return shopify;
 }
 
-export type ShopifyAuth = ReturnType<typeof shopifyAuth>;
+export interface ShopifyAuth {
+  begin: OAuthBegin;
+  callback: OAuthCallback;
+  nonce: Nonce;
+  safeCompare: SafeCompare;
+  getEmbeddedAppUrl: GetEmbeddedAppUrl;
+  buildEmbeddedAppUrl: BuildEmbeddedAppUrl;
+  tokenExchange: TokenExchange;
+  clientCredentials: ClientCredentials;
+}

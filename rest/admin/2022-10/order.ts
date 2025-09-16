@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -70,19 +70,17 @@ interface OpenArgs {
 }
 
 export class Order extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'order';
-  protected static PLURAL_NAME = 'orders';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {
     "customer": Customer
   };
-  protected static HAS_MANY: {[key: string]: typeof Base} = {
+  protected static hasMany: {[key: string]: typeof Base} = {
     "discount_codes": DiscountCode,
     "fulfillments": Fulfillment,
     "refunds": Refund
   };
-  protected static PATHS: ResourcePath[] = [
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "orders/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "orders/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "orders.json"},
@@ -92,6 +90,12 @@ export class Order extends Base {
     {"http_method": "post", "operation": "open", "ids": ["id"], "path": "orders/<id>/open.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "orders.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "orders/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "order",
+      "plural": "orders"
+    }
   ];
 
   public static async find(
@@ -103,10 +107,11 @@ export class Order extends Base {
   ): Promise<Order | null> {
     const result = await this.baseFind<Order>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -145,7 +150,7 @@ export class Order extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Order[]> {
+  ): Promise<FindAllResponse<Order>> {
     const response = await this.baseFind<Order>({
       session: session,
       urlIds: {},
@@ -245,7 +250,7 @@ export class Order extends Base {
   }
 
   public line_items: {[key: string]: unknown}[] | null;
-  public app_id: number | null;
+  public app_id: string | null;
   public billing_address: {[key: string]: unknown} | null;
   public browser_ip: string | null;
   public buyer_accepts_marketing: boolean | null;
@@ -255,6 +260,7 @@ export class Order extends Base {
   public checkout_token: string | null;
   public client_details: {[key: string]: unknown} | null;
   public closed_at: string | null;
+  public confirmation_number: string | null;
   public created_at: string | null;
   public currency: string | null;
   public current_subtotal_price: string | null;
@@ -276,10 +282,10 @@ export class Order extends Base {
   public fulfillment_status: string | null;
   public fulfillments: Fulfillment[] | null | {[key: string]: any};
   public gateway: string | null;
-  public id: number | null;
+  public id: string | null;
   public landing_site: string | null;
-  public location_id: number | null;
-  public merchant_of_record_app_id: number | null;
+  public location_id: string | null;
+  public merchant_of_record_app_id: string | null;
   public name: string | null;
   public note: string | null;
   public note_attributes: {[key: string]: unknown}[] | null;
@@ -301,7 +307,7 @@ export class Order extends Base {
   public source_identifier: string | null;
   public source_name: string | null;
   public source_url: string | null;
-  public subtotal_price: number | null;
+  public subtotal_price: string | null;
   public subtotal_price_set: {[key: string]: unknown} | null;
   public tags: string | null;
   public tax_lines: {[key: string]: unknown}[] | null;
@@ -321,5 +327,5 @@ export class Order extends Base {
   public total_tip_received: string | null;
   public total_weight: number | null;
   public updated_at: string | null;
-  public user_id: number | null;
+  public user_id: string | null;
 }

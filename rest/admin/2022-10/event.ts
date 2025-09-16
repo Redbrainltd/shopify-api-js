@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -33,18 +33,22 @@ interface CountArgs {
 }
 
 export class Event extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'event';
-  protected static PLURAL_NAME = 'events';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "count", "ids": [], "path": "events/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "events.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "events/<id>.json"},
     {"http_method": "get", "operation": "get", "ids": ["order_id"], "path": "orders/<order_id>/events.json"},
     {"http_method": "get", "operation": "get", "ids": ["product_id"], "path": "products/<product_id>/events.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "event",
+      "plural": "events"
+    }
   ];
 
   public static async find(
@@ -56,10 +60,11 @@ export class Event extends Base {
   ): Promise<Event | null> {
     const result = await this.baseFind<Event>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -76,7 +81,7 @@ export class Event extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Event[]> {
+  ): Promise<FindAllResponse<Event>> {
     const response = await this.baseFind<Event>({
       session: session,
       urlIds: {"order_id": order_id, "product_id": product_id},
@@ -107,14 +112,14 @@ export class Event extends Base {
     return response ? response.body : null;
   }
 
-  public arguments: string | null;
+  public arguments: string[] | null;
   public body: string | null;
   public created_at: string | null;
   public description: string | null;
-  public id: number | null;
+  public id: string | null;
   public message: string | null;
   public path: string | null;
-  public subject_id: number | null;
+  public subject_id: string | null;
   public subject_type: string | null;
   public verb: string | null;
 }

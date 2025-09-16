@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -21,15 +21,19 @@ interface AllArgs {
 }
 
 export class Dispute extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'dispute';
-  protected static PLURAL_NAME = 'disputes';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": [], "path": "shopify_payments/disputes.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "shopify_payments/disputes/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "dispute",
+      "plural": "disputes"
+    }
   ];
 
   public static async find(
@@ -40,10 +44,11 @@ export class Dispute extends Base {
   ): Promise<Dispute | null> {
     const result = await this.baseFind<Dispute>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -55,7 +60,7 @@ export class Dispute extends Base {
       initiated_at = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Dispute[]> {
+  ): Promise<FindAllResponse<Dispute>> {
     const response = await this.baseFind<Dispute>({
       session: session,
       urlIds: {},
@@ -70,9 +75,9 @@ export class Dispute extends Base {
   public evidence_due_by: string | null;
   public evidence_sent_on: string | null;
   public finalized_on: string | null;
-  public id: number | null;
-  public network_reason_code: number | null;
-  public order_id: number | null;
+  public id: string | null;
+  public network_reason_code: string | null;
+  public order_id: string | null;
   public reason: string | null;
   public status: string | null;
   public type: string | null;

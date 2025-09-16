@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -33,19 +33,23 @@ interface CountArgs {
 }
 
 export class Image extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'image';
-  protected static PLURAL_NAME = 'images';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["product_id", "id"], "path": "products/<product_id>/images/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": ["product_id"], "path": "products/<product_id>/images/count.json"},
     {"http_method": "get", "operation": "get", "ids": ["product_id"], "path": "products/<product_id>/images.json"},
     {"http_method": "get", "operation": "get", "ids": ["product_id", "id"], "path": "products/<product_id>/images/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": ["product_id"], "path": "products/<product_id>/images.json"},
     {"http_method": "put", "operation": "put", "ids": ["product_id", "id"], "path": "products/<product_id>/images/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "image",
+      "plural": "images"
+    }
   ];
 
   public static async find(
@@ -58,10 +62,11 @@ export class Image extends Base {
   ): Promise<Image | null> {
     const result = await this.baseFind<Image>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "product_id": product_id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -90,7 +95,7 @@ export class Image extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Image[]> {
+  ): Promise<FindAllResponse<Image>> {
     const response = await this.baseFind<Image>({
       session: session,
       urlIds: {"product_id": product_id},
@@ -123,11 +128,11 @@ export class Image extends Base {
 
   public created_at: string | null;
   public height: number | null;
-  public id: number | null;
+  public id: string | null;
   public position: number | null;
-  public product_id: number | null;
+  public product_id: string | null;
   public src: string | null;
   public updated_at: string | null;
-  public variant_ids: number[] | null;
+  public variant_ids: string[] | null;
   public width: number | null;
 }

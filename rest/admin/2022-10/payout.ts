@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -23,15 +23,19 @@ interface AllArgs {
 }
 
 export class Payout extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'payout';
-  protected static PLURAL_NAME = 'payouts';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": [], "path": "shopify_payments/payouts.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "shopify_payments/payouts/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "payout",
+      "plural": "payouts"
+    }
   ];
 
   public static async find(
@@ -42,10 +46,11 @@ export class Payout extends Base {
   ): Promise<Payout | null> {
     const result = await this.baseFind<Payout>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -59,7 +64,7 @@ export class Payout extends Base {
       status = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Payout[]> {
+  ): Promise<FindAllResponse<Payout>> {
     const response = await this.baseFind<Payout>({
       session: session,
       urlIds: {},
@@ -72,6 +77,6 @@ export class Payout extends Base {
   public amount: string | null;
   public currency: string | null;
   public date: string | null;
-  public id: number | null;
+  public id: string | null;
   public status: string | null;
 }

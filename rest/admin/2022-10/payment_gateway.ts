@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -21,18 +21,22 @@ interface AllArgs {
 }
 
 export class PaymentGateway extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'payment_gateway';
-  protected static PLURAL_NAME = 'payment_gateways';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "payment_gateways/<id>.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "payment_gateways.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "payment_gateways/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "payment_gateways.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "payment_gateways/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "payment_gateway",
+      "plural": "payment_gateways"
+    }
   ];
 
   public static async find(
@@ -43,10 +47,11 @@ export class PaymentGateway extends Base {
   ): Promise<PaymentGateway | null> {
     const result = await this.baseFind<PaymentGateway>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -71,7 +76,7 @@ export class PaymentGateway extends Base {
       session,
       ...otherArgs
     }: AllArgs
-  ): Promise<PaymentGateway[]> {
+  ): Promise<FindAllResponse<PaymentGateway>> {
     const response = await this.baseFind<PaymentGateway>({
       session: session,
       urlIds: {},
@@ -89,10 +94,10 @@ export class PaymentGateway extends Base {
   public credential4: string | null;
   public disabled: boolean | null;
   public enabled_card_brands: string[] | null;
-  public id: number | null;
+  public id: string | null;
   public name: string | null;
   public processing_method: string | null;
-  public provider_id: number | null;
+  public provider_id: string | null;
   public sandbox: boolean | null;
   public service_name: string | null;
   public supports_network_tokenization: boolean | null;

@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -24,20 +24,24 @@ interface CheckoutsArgs {
 }
 
 export class AbandonedCheckout extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'abandoned_checkout';
-  protected static PLURAL_NAME = 'abandoned_checkouts';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {
     "currency": Currency,
     "customer": Customer
   };
-  protected static HAS_MANY: {[key: string]: typeof Base} = {
+  protected static hasMany: {[key: string]: typeof Base} = {
     "discount_codes": DiscountCode
   };
-  protected static PATHS: ResourcePath[] = [
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "checkouts", "ids": [], "path": "checkouts.json"},
     {"http_method": "get", "operation": "checkouts", "ids": [], "path": "checkouts.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "abandoned_checkout",
+      "plural": "abandoned_checkouts"
+    }
   ];
 
   public static async checkouts(
@@ -77,14 +81,14 @@ export class AbandonedCheckout extends Base {
   public currency: Currency | null | {[key: string]: any};
   public customer: Customer | null | {[key: string]: any};
   public customer_locale: string | null;
-  public device_id: number | null;
+  public device_id: string | null;
   public discount_codes: DiscountCode[] | null | {[key: string]: any};
   public email: string | null;
   public gateway: string | null;
-  public id: number | null;
+  public id: string | null;
   public landing_site: string | null;
   public line_items: {[key: string]: unknown} | null;
-  public location_id: number | null;
+  public location_id: string | null;
   public note: string | null;
   public phone: string | null;
   public presentment_currency: string | null;
@@ -104,5 +108,5 @@ export class AbandonedCheckout extends Base {
   public total_tax: string | null;
   public total_weight: number | null;
   public updated_at: string | null;
-  public user_id: number | null;
+  public user_id: string | null;
 }

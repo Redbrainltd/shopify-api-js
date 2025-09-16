@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -26,17 +26,21 @@ interface InventoryLevelsArgs {
 }
 
 export class Location extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'location';
-  protected static PLURAL_NAME = 'locations';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "count", "ids": [], "path": "locations/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "locations.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "locations/<id>.json"},
     {"http_method": "get", "operation": "inventory_levels", "ids": ["id"], "path": "locations/<id>/inventory_levels.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "location",
+      "plural": "locations"
+    }
   ];
 
   public static async find(
@@ -47,10 +51,11 @@ export class Location extends Base {
   ): Promise<Location | null> {
     const result = await this.baseFind<Location>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -58,7 +63,7 @@ export class Location extends Base {
       session,
       ...otherArgs
     }: AllArgs
-  ): Promise<Location[]> {
+  ): Promise<FindAllResponse<Location>> {
     const response = await this.baseFind<Location>({
       session: session,
       urlIds: {},
@@ -114,7 +119,7 @@ export class Location extends Base {
   public country: string | null;
   public country_code: string | null;
   public created_at: string | null;
-  public id: number | null;
+  public id: string | null;
   public legacy: boolean | null;
   public localized_country_name: string | null;
   public localized_province_name: string | null;

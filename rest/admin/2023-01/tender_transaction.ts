@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -19,14 +19,18 @@ interface AllArgs {
 }
 
 export class TenderTransaction extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'tender_transaction';
-  protected static PLURAL_NAME = 'tender_transactions';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": [], "path": "tender_transactions.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "tender_transaction",
+      "plural": "tender_transactions"
+    }
   ];
 
   public static async all(
@@ -40,7 +44,7 @@ export class TenderTransaction extends Base {
       order = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<TenderTransaction[]> {
+  ): Promise<FindAllResponse<TenderTransaction>> {
     const response = await this.baseFind<TenderTransaction>({
       session: session,
       urlIds: {},
@@ -52,12 +56,12 @@ export class TenderTransaction extends Base {
 
   public amount: string | null;
   public currency: string | null;
-  public id: number | null;
-  public order_id: number | null;
+  public id: string | null;
+  public order_id: string | null;
   public payment_details: {[key: string]: unknown} | null;
   public payment_method: string | null;
   public processed_at: string | null;
   public remote_reference: string | null;
   public test: boolean | null;
-  public user_id: number | null;
+  public user_id: string | null;
 }

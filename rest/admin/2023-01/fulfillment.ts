@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -47,13 +47,11 @@ interface UpdateTrackingArgs {
 }
 
 export class Fulfillment extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'fulfillment';
-  protected static PLURAL_NAME = 'fulfillments';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "count", "ids": ["order_id"], "path": "orders/<order_id>/fulfillments/count.json"},
     {"http_method": "get", "operation": "get", "ids": ["fulfillment_order_id"], "path": "fulfillment_orders/<fulfillment_order_id>/fulfillments.json"},
     {"http_method": "get", "operation": "get", "ids": ["order_id"], "path": "orders/<order_id>/fulfillments.json"},
@@ -61,6 +59,12 @@ export class Fulfillment extends Base {
     {"http_method": "post", "operation": "cancel", "ids": ["id"], "path": "fulfillments/<id>/cancel.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "fulfillments.json"},
     {"http_method": "post", "operation": "update_tracking", "ids": ["id"], "path": "fulfillments/<id>/update_tracking.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "fulfillment",
+      "plural": "fulfillments"
+    }
   ];
 
   public static async find(
@@ -73,10 +77,11 @@ export class Fulfillment extends Base {
   ): Promise<Fulfillment | null> {
     const result = await this.baseFind<Fulfillment>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "order_id": order_id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -93,7 +98,7 @@ export class Fulfillment extends Base {
       updated_at_min = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Fulfillment[]> {
+  ): Promise<FindAllResponse<Fulfillment>> {
     const response = await this.baseFind<Fulfillment>({
       session: session,
       urlIds: {"fulfillment_order_id": fulfillment_order_id, "order_id": order_id},
@@ -168,19 +173,21 @@ export class Fulfillment extends Base {
   }
 
   public created_at: string | null;
-  public id: number | null;
+  public id: string | null;
   public line_items: {[key: string]: unknown}[] | null;
-  public location_id: number | null;
+  public location_id: string | null;
   public name: string | null;
   public notify_customer: boolean | null;
-  public order_id: number | null;
+  public order_id: string | null;
   public origin_address: {[key: string]: unknown}[] | null;
   public receipt: {[key: string]: unknown} | null;
   public service: string | null;
   public shipment_status: string | null;
   public status: string | null;
   public tracking_company: string | null;
+  public tracking_number: string | null;
   public tracking_numbers: string[] | null;
+  public tracking_url: string | null;
   public tracking_urls: string[] | null;
   public updated_at: string | null;
   public variant_inventory_management: string | null;

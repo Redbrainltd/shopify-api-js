@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -22,17 +22,21 @@ interface ProductsArgs {
 }
 
 export class Collection extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'collection';
-  protected static PLURAL_NAME = 'collections';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {
     "image": Image
   };
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "collections/<id>.json"},
     {"http_method": "get", "operation": "products", "ids": ["id"], "path": "collections/<id>/products.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "collection",
+      "plural": "collections"
+    }
   ];
 
   public static async find(
@@ -44,10 +48,11 @@ export class Collection extends Base {
   ): Promise<Collection | null> {
     const result = await this.baseFind<Collection>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async products(
@@ -74,7 +79,7 @@ export class Collection extends Base {
   public title: string | null;
   public body_html: string | null;
   public handle: string | null;
-  public id: number | null;
+  public id: string | null;
   public image: Image | null | {[key: string]: any};
   public published_at: string | null;
   public published_scope: string | null;

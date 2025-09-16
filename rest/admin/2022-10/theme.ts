@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -23,18 +23,22 @@ interface AllArgs {
 }
 
 export class Theme extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'theme';
-  protected static PLURAL_NAME = 'themes';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "themes/<id>.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "themes.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "themes/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "themes.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "themes/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "theme",
+      "plural": "themes"
+    }
   ];
 
   public static async find(
@@ -46,10 +50,11 @@ export class Theme extends Base {
   ): Promise<Theme | null> {
     const result = await this.baseFind<Theme>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -75,7 +80,7 @@ export class Theme extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Theme[]> {
+  ): Promise<FindAllResponse<Theme>> {
     const response = await this.baseFind<Theme>({
       session: session,
       urlIds: {},
@@ -86,11 +91,12 @@ export class Theme extends Base {
   }
 
   public created_at: string | null;
-  public id: number | null;
+  public id: string | null;
   public name: string | null;
   public previewable: boolean | null;
   public processing: boolean | null;
   public role: string | null;
-  public theme_store_id: number | null;
+  public src: string | null;
+  public theme_store_id: string | null;
   public updated_at: string | null;
 }

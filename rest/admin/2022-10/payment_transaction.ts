@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -19,17 +19,25 @@ interface TransactionsArgs {
   payout_status?: unknown;
 }
 
-export class PaymentTransaction extends Base {
-  public static API_VERSION = ApiVersion.October22;
+interface TransactionsResponse {
+  transactions: PaymentTransaction[];
+}
 
-  protected static NAME = 'payment_transaction';
-  protected static PLURAL_NAME = 'payment_transactions';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {
+export class PaymentTransaction extends Base {
+  public static apiVersion = ApiVersion.October22;
+
+  protected static hasOne: {[key: string]: typeof Base} = {
     "currency": Currency
   };
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "transactions", "ids": [], "path": "shopify_payments/balance/transactions.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "payment_transaction",
+      "plural": "payment_transactions"
+    }
   ];
 
   public static async transactions(
@@ -42,8 +50,8 @@ export class PaymentTransaction extends Base {
       payout_status = null,
       ...otherArgs
     }: TransactionsArgs
-  ): Promise<unknown> {
-    const response = await this.request<PaymentTransaction>({
+  ): Promise<TransactionsResponse | null> {
+    const response = await this.request<TransactionsResponse>({
       http_method: "get",
       operation: "transactions",
       session: session,
@@ -59,14 +67,14 @@ export class PaymentTransaction extends Base {
   public amount: string | null;
   public currency: Currency | null | {[key: string]: any};
   public fee: string | null;
-  public id: number | null;
+  public id: string | null;
   public net: string | null;
-  public payout_id: number | null;
+  public payout_id: string | null;
   public payout_status: string | null;
   public processed_at: string | null;
-  public source_id: number | null;
-  public source_order_id: number | null;
-  public source_order_transaction_id: number | null;
+  public source_id: string | null;
+  public source_order_id: string | null;
+  public source_order_transaction_id: string | null;
   public source_type: string | null;
   public test: boolean | null;
   public type: string | null;

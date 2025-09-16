@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -26,25 +26,29 @@ interface CompleteArgs {
 }
 
 export class Checkout extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'checkout';
-  protected static PLURAL_NAME = 'checkouts';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {
     "discount_code": DiscountCode,
     "order": Order
   };
-  protected static HAS_MANY: {[key: string]: typeof Base} = {
+  protected static hasMany: {[key: string]: typeof Base} = {
     "gift_cards": GiftCard
   };
-  protected static PATHS: ResourcePath[] = [
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": ["token"], "path": "checkouts/<token>.json"},
     {"http_method": "get", "operation": "shipping_rates", "ids": ["token"], "path": "checkouts/<token>/shipping_rates.json"},
     {"http_method": "post", "operation": "complete", "ids": ["token"], "path": "checkouts/<token>/complete.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "checkouts.json"},
     {"http_method": "put", "operation": "put", "ids": ["token"], "path": "checkouts/<token>.json"}
   ];
-  protected static PRIMARY_KEY: string = "token";
+  protected static primaryKey: string = "token";
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "checkout",
+      "plural": "checkouts"
+    }
+  ];
 
   public static async find(
     {
@@ -54,10 +58,11 @@ export class Checkout extends Base {
   ): Promise<Checkout | null> {
     const result = await this.baseFind<Checkout>({
       session: session,
+      requireIds: true,
       urlIds: {"token": token},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async shipping_rates(
@@ -105,7 +110,7 @@ export class Checkout extends Base {
   public buyer_accepts_marketing: boolean | null;
   public created_at: string | null;
   public currency: string | null;
-  public customer_id: number | null;
+  public customer_id: string | null;
   public discount_code: DiscountCode | null | {[key: string]: any};
   public email: string | null;
   public gift_cards: GiftCard[] | null | {[key: string]: any};
@@ -130,6 +135,6 @@ export class Checkout extends Base {
   public total_price: string | null;
   public total_tax: string | null;
   public updated_at: string | null;
-  public user_id: number | null;
+  public user_id: string | null;
   public web_url: string | null;
 }

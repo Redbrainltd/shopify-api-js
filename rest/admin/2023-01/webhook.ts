@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -37,19 +37,23 @@ interface CountArgs {
 }
 
 export class Webhook extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'webhook';
-  protected static PLURAL_NAME = 'webhooks';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "webhooks/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "webhooks/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "webhooks.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "webhooks/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "webhooks.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "webhooks/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "webhook",
+      "plural": "webhooks"
+    }
   ];
 
   public static async find(
@@ -61,10 +65,11 @@ export class Webhook extends Base {
   ): Promise<Webhook | null> {
     const result = await this.baseFind<Webhook>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -98,7 +103,7 @@ export class Webhook extends Base {
       updated_at_max = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Webhook[]> {
+  ): Promise<FindAllResponse<Webhook>> {
     const response = await this.baseFind<Webhook>({
       session: session,
       urlIds: {},
@@ -135,7 +140,7 @@ export class Webhook extends Base {
   public created_at: string | null;
   public fields: string[] | null;
   public format: string | null;
-  public id: number | null;
+  public id: string | null;
   public metafield_namespaces: string[] | null;
   public private_metafield_namespaces: string[] | null;
   public updated_at: string | null;

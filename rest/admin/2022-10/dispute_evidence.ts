@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -15,19 +15,23 @@ interface FindArgs {
 }
 
 export class DisputeEvidence extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'dispute_evidence';
-  protected static PLURAL_NAME = 'dispute_evidences';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {
     "fulfillments": Fulfillment
   };
-  protected static PATHS: ResourcePath[] = [
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": ["dispute_id"], "path": "shopify_payments/disputes/<dispute_id>/dispute_evidences.json"},
     {"http_method": "put", "operation": "put", "ids": ["dispute_id"], "path": "shopify_payments/disputes/<dispute_id>/dispute_evidences.json"}
   ];
-  protected static PRIMARY_KEY: string = "dispute_id";
+  protected static primaryKey: string = "dispute_id";
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "dispute_evidence",
+      "plural": "dispute_evidences"
+    }
+  ];
 
   public static async find(
     {
@@ -37,10 +41,11 @@ export class DisputeEvidence extends Base {
   ): Promise<DisputeEvidence | null> {
     const result = await this.baseFind<DisputeEvidence>({
       session: session,
+      requireIds: true,
       urlIds: {"dispute_id": dispute_id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public access_activity_log: string | null;
@@ -53,8 +58,8 @@ export class DisputeEvidence extends Base {
   public customer_last_name: string | null;
   public dispute_evidence_files: {[key: string]: unknown} | null;
   public fulfillments: Fulfillment[] | null | {[key: string]: any};
-  public id: number | null;
-  public payments_dispute_id: number | null;
+  public id: string | null;
+  public payments_dispute_id: string | null;
   public product_description: {[key: string]: unknown} | null;
   public refund_policy_disclosure: string | null;
   public refund_refusal_explanation: string | null;

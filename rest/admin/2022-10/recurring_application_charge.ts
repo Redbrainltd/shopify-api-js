@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -28,18 +28,22 @@ interface CustomizeArgs {
 }
 
 export class RecurringApplicationCharge extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'recurring_application_charge';
-  protected static PLURAL_NAME = 'recurring_application_charges';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "recurring_application_charges/<id>.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "recurring_application_charges.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "recurring_application_charges/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "recurring_application_charges.json"},
     {"http_method": "put", "operation": "customize", "ids": ["id"], "path": "recurring_application_charges/<id>/customize.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "recurring_application_charge",
+      "plural": "recurring_application_charges"
+    }
   ];
 
   public static async find(
@@ -51,10 +55,11 @@ export class RecurringApplicationCharge extends Base {
   ): Promise<RecurringApplicationCharge | null> {
     const result = await this.baseFind<RecurringApplicationCharge>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -81,7 +86,7 @@ export class RecurringApplicationCharge extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<RecurringApplicationCharge[]> {
+  ): Promise<FindAllResponse<RecurringApplicationCharge>> {
     const response = await this.baseFind<RecurringApplicationCharge>({
       session: session,
       urlIds: {},
@@ -116,7 +121,8 @@ export class RecurringApplicationCharge extends Base {
   public capped_amount: string | number | null;
   public confirmation_url: string | null;
   public created_at: string | null;
-  public id: number | null;
+  public currency: string | null;
+  public id: string | null;
   public name: string | null;
   public price: string | number | null;
   public return_url: string | null;

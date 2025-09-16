@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -45,19 +45,23 @@ interface CountArgs {
 }
 
 export class CustomCollection extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'custom_collection';
-  protected static PLURAL_NAME = 'custom_collections';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "custom_collections/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "custom_collections/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "custom_collections.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "custom_collections/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "custom_collections.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "custom_collections/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "custom_collection",
+      "plural": "custom_collections"
+    }
   ];
 
   public static async find(
@@ -69,10 +73,11 @@ export class CustomCollection extends Base {
   ): Promise<CustomCollection | null> {
     const result = await this.baseFind<CustomCollection>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -109,7 +114,7 @@ export class CustomCollection extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<CustomCollection[]> {
+  ): Promise<FindAllResponse<CustomCollection>> {
     const response = await this.baseFind<CustomCollection>({
       session: session,
       urlIds: {},
@@ -148,7 +153,7 @@ export class CustomCollection extends Base {
   public title: string | null;
   public body_html: string | null;
   public handle: string | null;
-  public id: number | null;
+  public id: string | null;
   public image: string | {[key: string]: unknown} | null;
   public published: boolean | null;
   public published_at: string | null;

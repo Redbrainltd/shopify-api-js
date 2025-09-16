@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -24,18 +24,22 @@ interface AllArgs {
 }
 
 export class OrderRisk extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'order_risk';
-  protected static PLURAL_NAME = 'order_risks';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["order_id", "id"], "path": "orders/<order_id>/risks/<id>.json"},
     {"http_method": "get", "operation": "get", "ids": ["order_id"], "path": "orders/<order_id>/risks.json"},
     {"http_method": "get", "operation": "get", "ids": ["order_id", "id"], "path": "orders/<order_id>/risks/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": ["order_id"], "path": "orders/<order_id>/risks.json"},
     {"http_method": "put", "operation": "put", "ids": ["order_id", "id"], "path": "orders/<order_id>/risks/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "risk",
+      "plural": "risks"
+    }
   ];
 
   protected static getJsonBodyName(): string
@@ -52,10 +56,11 @@ export class OrderRisk extends Base {
   ): Promise<OrderRisk | null> {
     const result = await this.baseFind<OrderRisk>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "order_id": order_id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -82,7 +87,7 @@ export class OrderRisk extends Base {
       order_id = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<OrderRisk[]> {
+  ): Promise<FindAllResponse<OrderRisk>> {
     const response = await this.baseFind<OrderRisk>({
       session: session,
       urlIds: {"order_id": order_id},
@@ -93,13 +98,13 @@ export class OrderRisk extends Base {
   }
 
   public cause_cancel: boolean | null;
-  public checkout_id: number | null;
+  public checkout_id: string | null;
   public display: boolean | null;
-  public id: number | null;
+  public id: string | null;
   public merchant_message: string | null;
   public message: string | null;
-  public order_id: number | null;
+  public order_id: string | null;
   public recommendation: string | null;
-  public score: number | null;
+  public score: string | null;
   public source: string | null;
 }

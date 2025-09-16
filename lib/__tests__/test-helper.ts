@@ -1,8 +1,6 @@
 import * as jose from 'jose';
+import {compare} from 'compare-versions';
 
-import {shopifyApi, Shopify} from '..';
-import {LATEST_API_VERSION, LogSeverity} from '../types';
-import {ConfigParams} from '../base-types';
 import {JwtPayload} from '../session/types';
 import {getHMACKey} from '../utils/get-hmac-key';
 import {mockTestRequests} from '../../adapters/mock/mock_test_requests';
@@ -13,7 +11,7 @@ import {
   NormalizedResponse,
 } from '../../runtime/http';
 import {Session} from '../session/session';
-import {RequestReturn} from '../clients/http_client/types';
+import {RequestReturn} from '../clients/types';
 import {SHOPIFY_API_LIBRARY_VERSION} from '../version';
 
 declare global {
@@ -27,35 +25,21 @@ declare global {
   }
 }
 
-// eslint-disable-next-line import/no-mutable-exports
-let shopify: Shopify;
-// eslint-disable-next-line import/no-mutable-exports
-let testConfig: ConfigParams;
-
-export function getNewTestConfig(): ConfigParams {
-  return {
-    apiKey: 'test_key',
-    apiSecretKey: 'test_secret_key',
-    scopes: ['test_scope'],
-    hostName: 'test_host_name',
-    hostScheme: 'https',
-    apiVersion: LATEST_API_VERSION,
-    isEmbeddedApp: false,
-    isCustomStoreApp: false,
-    customShopDomains: undefined,
-    billing: undefined,
-    logger: {
-      log: jest.fn(),
-      level: LogSeverity.Debug,
-      httpRequests: false,
-      timestamps: false,
-    },
-  };
-}
-
 beforeEach(() => {
-  testConfig = getNewTestConfig();
-  shopify = shopifyApi(testConfig);
+  mockTestRequests.reset();
+});
+
+afterEach(() => {
+  const remainingResponses = mockTestRequests.getResponses();
+  if (remainingResponses.length) {
+    throw new Error(
+      `Test did not check all expected responses, responses: ${JSON.stringify(
+        remainingResponses,
+        undefined,
+        2,
+      )}`,
+    );
+  }
 });
 
 test('passes test deprecation checks', () => {
@@ -65,8 +49,6 @@ test('passes test deprecation checks', () => {
     expect(SHOPIFY_API_LIBRARY_VERSION).toBeWithinDeprecationSchedule(),
   ).toThrow();
 });
-
-export {shopify, testConfig};
 
 export async function signJWT(
   secret: string,
@@ -97,7 +79,10 @@ export function queueMockResponse(
   mockTestRequests.queueResponse({
     statusCode: partial.statusCode ?? 200,
     statusText: partial.statusText ?? 'OK',
-    headers: canonicalizeHeaders(partial.headers ?? {}),
+    headers: canonicalizeHeaders({
+      'Content-Type': 'application/json',
+      ...partial.headers,
+    }),
     body,
   });
 }
@@ -116,14 +101,16 @@ export function queueMockResponses(
 
 // Slightly hacky way to grab the Set-Cookie header from a response and use it as a request's Cookie header
 export async function setSignedSessionCookie({
+  apiSecretKey,
   request,
   cookieId,
 }: {
+  apiSecretKey: string;
   request: NormalizedRequest;
   cookieId: string;
 }) {
   const cookies = new Cookies(request, {} as NormalizedResponse, {
-    keys: [shopify.config.apiSecretKey],
+    keys: [apiSecretKey],
   });
   await cookies.setAndSign('shopify_app_session', cookieId, {
     secure: true,
@@ -156,4 +143,18 @@ export async function createDummySession({
   });
 
   return session;
+}
+
+export function testIfLibraryVersionIsAtLeast(
+  version: string,
+  testName: string,
+  testFn: jest.ProvidesCallback,
+) {
+  describe(`when library version is at least ${version}`, () => {
+    if (compare(SHOPIFY_API_LIBRARY_VERSION, version, '>=')) {
+      test(testName, testFn);
+    } else {
+      test.skip(`- '${testName}' requires library version ${version} or higher`, () => {});
+    }
+  });
 }

@@ -1,5 +1,3 @@
-import crypto from 'crypto';
-
 import {
   setAbstractFetchFunc,
   setAbstractConvertRequestFunc,
@@ -7,11 +5,9 @@ import {
   setAbstractConvertResponseFunc,
   setAbstractConvertHeadersFunc,
   setAbstractRuntimeString,
-  setCrypto,
 } from '../../runtime';
 
 import {
-  nodeFetch,
   nodeConvertRequest,
   nodeConvertIncomingResponse,
   nodeConvertAndSendResponse,
@@ -19,10 +15,13 @@ import {
   nodeRuntimeString,
 } from './adapter';
 
-setAbstractFetchFunc(nodeFetch);
+// For the purposes of this package, fetch correctly implements everything we need
+setAbstractFetchFunc(globalThis.fetch);
 setAbstractConvertRequestFunc(nodeConvertRequest);
 setAbstractConvertIncomingResponseFunc(nodeConvertIncomingResponse);
 setAbstractConvertResponseFunc(nodeConvertAndSendResponse);
 setAbstractConvertHeadersFunc(nodeConvertAndSetHeaders);
 setAbstractRuntimeString(nodeRuntimeString);
-setCrypto(crypto as any);
+
+// Export a marker to prevent tree-shaking
+export const nodeAdapterInitialized = true;

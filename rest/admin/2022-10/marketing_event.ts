@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -40,13 +40,11 @@ interface EngagementsArgs {
 }
 
 export class MarketingEvent extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'marketing_event';
-  protected static PLURAL_NAME = 'marketing_events';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "marketing_events/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "marketing_events/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "marketing_events.json"},
@@ -54,6 +52,12 @@ export class MarketingEvent extends Base {
     {"http_method": "post", "operation": "engagements", "ids": ["id"], "path": "marketing_events/<id>/engagements.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "marketing_events.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "marketing_events/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "marketing_event",
+      "plural": "marketing_events"
+    }
   ];
 
   public static async find(
@@ -64,10 +68,11 @@ export class MarketingEvent extends Base {
   ): Promise<MarketingEvent | null> {
     const result = await this.baseFind<MarketingEvent>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -94,7 +99,7 @@ export class MarketingEvent extends Base {
       offset = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<MarketingEvent[]> {
+  ): Promise<FindAllResponse<MarketingEvent>> {
     const response = await this.baseFind<MarketingEvent>({
       session: session,
       urlIds: {},
@@ -161,7 +166,7 @@ export class MarketingEvent extends Base {
   public currency: string | null;
   public description: string | null;
   public ended_at: string | null;
-  public id: number | null;
+  public id: string | null;
   public manage_url: string | null;
   public marketed_resources: {[key: string]: unknown}[] | null;
   public preview_url: string | null;

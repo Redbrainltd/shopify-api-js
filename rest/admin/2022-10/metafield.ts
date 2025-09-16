@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -77,13 +77,11 @@ interface CountArgs {
 }
 
 export class Metafield extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'metafield';
-  protected static PLURAL_NAME = 'metafields';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["article_id", "id"], "path": "articles/<article_id>/metafields/<id>.json"},
     {"http_method": "delete", "operation": "delete", "ids": ["blog_id", "id"], "path": "blogs/<blog_id>/metafields/<id>.json"},
     {"http_method": "delete", "operation": "delete", "ids": ["blog_id", "id"], "path": "blogs/<blog_id>/metafields/<id>.json"},
@@ -157,6 +155,12 @@ export class Metafield extends Base {
     {"http_method": "put", "operation": "put", "ids": ["product_id", "id"], "path": "products/<product_id>/metafields/<id>.json"},
     {"http_method": "put", "operation": "put", "ids": ["variant_id", "id"], "path": "variants/<variant_id>/metafields/<id>.json"}
   ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "metafield",
+      "plural": "metafields"
+    }
+  ];
 
   public static async find(
     {
@@ -177,10 +181,11 @@ export class Metafield extends Base {
   ): Promise<Metafield | null> {
     const result = await this.baseFind<Metafield>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "article_id": article_id, "blog_id": blog_id, "collection_id": collection_id, "customer_id": customer_id, "draft_order_id": draft_order_id, "order_id": order_id, "page_id": page_id, "product_image_id": product_image_id, "product_id": product_id, "variant_id": variant_id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -236,7 +241,7 @@ export class Metafield extends Base {
       metafield = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Metafield[]> {
+  ): Promise<FindAllResponse<Metafield>> {
     const response = await this.baseFind<Metafield>({
       session: session,
       urlIds: {"article_id": article_id, "blog_id": blog_id, "collection_id": collection_id, "customer_id": customer_id, "draft_order_id": draft_order_id, "order_id": order_id, "page_id": page_id, "product_image_id": product_image_id, "product_id": product_id, "variant_id": variant_id},
@@ -277,22 +282,22 @@ export class Metafield extends Base {
 
   public key: string | null;
   public namespace: string | null;
-  public value: string | number | number | null;
-  public article_id: number | null;
-  public blog_id: number | null;
-  public collection_id: number | null;
+  public value: string | number | number | boolean | string | null;
+  public article_id: string | null;
+  public blog_id: string | null;
+  public collection_id: string | null;
   public created_at: string | null;
-  public customer_id: number | null;
+  public customer_id: string | null;
   public description: string | null;
-  public draft_order_id: number | null;
-  public id: number | null;
-  public order_id: number | null;
-  public owner_id: number | null;
+  public draft_order_id: string | null;
+  public id: string | null;
+  public order_id: string | null;
+  public owner_id: string | null;
   public owner_resource: string | null;
-  public page_id: number | null;
-  public product_id: number | null;
-  public product_image_id: number | null;
+  public page_id: string | null;
+  public product_id: string | null;
+  public product_image_id: string | null;
   public type: string | null;
   public updated_at: string | null;
-  public variant_id: number | null;
+  public variant_id: string | null;
 }

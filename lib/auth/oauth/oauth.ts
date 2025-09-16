@@ -1,14 +1,12 @@
-import {v4 as uuidv4} from 'uuid';
+import {isbot} from 'isbot';
 
+import {throwFailedRequest} from '../../clients/common';
 import ProcessedQuery from '../../utils/processed-query';
 import {ConfigInterface} from '../../base-types';
 import * as ShopifyErrors from '../../error';
 import {validateHmac} from '../../utils/hmac-validator';
 import {sanitizeShop} from '../../utils/shop-validator';
 import {Session} from '../../session/session';
-import {getJwtSessionId, getOfflineId} from '../../session/session-utils';
-import {httpClientClass} from '../../clients/http_client/http_client';
-import {DataType, RequestReturn} from '../../clients/http_client/types';
 import {
   abstractConvertRequest,
   abstractConvertIncomingResponse,
@@ -18,8 +16,11 @@ import {
   AdapterHeaders,
   Cookies,
   NormalizedResponse,
+  NormalizedRequest,
 } from '../../../runtime/http';
-import {logger} from '../../logger';
+import {logger, ShopifyLogger} from '../../logger';
+import {DataType} from '../../clients/types';
+import {fetchRequestFactory} from '../../utils/fetch-request';
 
 import {
   SESSION_COOKIE_NAME,
@@ -28,18 +29,35 @@ import {
   CallbackParams,
   AuthQuery,
   AccessTokenResponse,
-  OnlineAccessResponse,
-  OnlineAccessInfo,
 } from './types';
 import {nonce} from './nonce';
 import {safeCompare} from './safe-compare';
+import {createSession} from './create-session';
+
+export type OAuthBegin = (beginParams: BeginParams) => Promise<AdapterResponse>;
 
 export interface CallbackResponse<T = AdapterHeaders> {
   headers: T;
   session: Session;
 }
 
-export function begin(config: ConfigInterface) {
+export type OAuthCallback = <T = AdapterHeaders>(
+  callbackParams: CallbackParams,
+) => Promise<CallbackResponse<T>>;
+
+interface BotLog {
+  request: NormalizedRequest;
+  log: ShopifyLogger;
+  func: string;
+}
+
+const logForBot = ({request, log, func}: BotLog) => {
+  log.debug(`Possible bot request to auth ${func}: `, {
+    userAgent: request.headers['User-Agent'],
+  });
+};
+
+export function begin(config: ConfigInterface): OAuthBegin {
   return async ({
     shop,
     callbackPath,
@@ -54,9 +72,18 @@ export function begin(config: ConfigInterface) {
     const log = logger(config);
     log.info('Beginning OAuth', {shop, isOnline, callbackPath});
 
-    const cleanShop = sanitizeShop(config)(shop, true)!;
     const request = await abstractConvertRequest(adapterArgs);
     const response = await abstractConvertIncomingResponse(adapterArgs);
+
+    let userAgent = request.headers['User-Agent'];
+    if (Array.isArray(userAgent)) {
+      userAgent = userAgent[0];
+    }
+    if (isbot(userAgent)) {
+      logForBot({request, log, func: 'begin'});
+      response.statusCode = 410;
+      return abstractConvertResponse(response, adapterArgs);
+    }
 
     const cookies = new Cookies(request, response, {
       keys: [config.apiSecretKey],
@@ -72,9 +99,10 @@ export function begin(config: ConfigInterface) {
       path: callbackPath,
     });
 
+    const scopes = config.scopes ? config.scopes.toString() : '';
     const query = {
       client_id: config.apiKey,
-      scope: config.scopes.toString(),
+      scope: scopes,
       redirect_uri: `${config.hostScheme}://${config.hostName}${callbackPath}`,
       state,
       'grant_options[]': isOnline ? 'per-user' : '',
@@ -82,6 +110,7 @@ export function begin(config: ConfigInterface) {
     const processedQuery = new ProcessedQuery();
     processedQuery.putAll(query);
 
+    const cleanShop = sanitizeShop(config)(shop, true)!;
     const redirectUrl = `https://${cleanShop}/admin/oauth/authorize${processedQuery.stringify()}`;
     response.statusCode = 302;
     response.statusText = 'Found';
@@ -97,9 +126,8 @@ export function begin(config: ConfigInterface) {
   };
 }
 
-export function callback(config: ConfigInterface) {
+export function callback(config: ConfigInterface): OAuthCallback {
   return async function callback<T = AdapterHeaders>({
-    isOnline: isOnlineParam,
     ...adapterArgs
   }: CallbackParams): Promise<CallbackResponse<T>> {
     throwIfCustomStoreApp(
@@ -109,13 +137,6 @@ export function callback(config: ConfigInterface) {
 
     const log = logger(config);
 
-    if (isOnlineParam !== undefined) {
-      await log.deprecated(
-        '7.0.0',
-        'The isOnline param is no longer required for auth callback',
-      );
-    }
-
     const request = await abstractConvertRequest(adapterArgs);
 
     const query = new URL(
@@ -124,9 +145,21 @@ export function callback(config: ConfigInterface) {
     ).searchParams;
     const shop = query.get('shop')!;
 
+    const response = {} as NormalizedResponse;
+    let userAgent = request.headers['User-Agent'];
+    if (Array.isArray(userAgent)) {
+      userAgent = userAgent[0];
+    }
+    if (isbot(userAgent)) {
+      logForBot({request, log, func: 'callback'});
+      throw new ShopifyErrors.BotActivityDetected(
+        'Invalid OAuth callback initiated by bot',
+      );
+    }
+
     log.info('Completing OAuth', {shop});
 
-    const cookies = new Cookies(request, {} as NormalizedResponse, {
+    const cookies = new Cookies(request, response, {
       keys: [config.apiSecretKey],
       secure: true,
     });
@@ -156,21 +189,28 @@ export function callback(config: ConfigInterface) {
       code: query.get('code'),
     };
 
-    const postParams = {
-      path: '/admin/oauth/access_token',
-      type: DataType.JSON,
-      data: body,
-    };
     const cleanShop = sanitizeShop(config)(query.get('shop')!, true)!;
 
-    const HttpClient = httpClientClass(config);
-    const client = new HttpClient({domain: cleanShop});
-    const postResponse = await client.post(postParams);
+    const postResponse = await fetchRequestFactory(config)(
+      `https://${cleanShop}/admin/oauth/access_token`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': DataType.JSON,
+          Accept: DataType.JSON,
+        },
+      },
+    );
+
+    if (!postResponse.ok) {
+      throwFailedRequest(await postResponse.json(), false, postResponse);
+    }
 
     const session: Session = createSession({
-      postResponse,
+      accessTokenResponse: await postResponse.json<AccessTokenResponse>(),
       shop: cleanShop,
-      stateFromCookie,
+      state: stateFromCookie,
       config,
     });
 
@@ -206,63 +246,6 @@ async function validQuery({
     (await validateHmac(config)(query)) &&
     safeCompare(query.state!, stateFromCookie)
   );
-}
-
-function createSession({
-  config,
-  postResponse,
-  shop,
-  stateFromCookie,
-}: {
-  config: ConfigInterface;
-  postResponse: RequestReturn;
-  shop: string;
-  stateFromCookie: string;
-}): Session {
-  const associatedUser = (postResponse.body as OnlineAccessResponse)
-    .associated_user;
-  const isOnline = Boolean(associatedUser);
-
-  logger(config).info('Creating new session', {shop, isOnline});
-
-  if (isOnline) {
-    let sessionId: string;
-    const responseBody = postResponse.body as OnlineAccessResponse;
-    const {access_token, scope, ...rest} = responseBody;
-    const sessionExpiration = new Date(
-      Date.now() + responseBody.expires_in * 1000,
-    );
-
-    if (config.isEmbeddedApp) {
-      sessionId = getJwtSessionId(config)(
-        shop,
-        `${(rest as OnlineAccessInfo).associated_user.id}`,
-      );
-    } else {
-      sessionId = uuidv4();
-    }
-
-    return new Session({
-      id: sessionId,
-      shop,
-      state: stateFromCookie,
-      isOnline,
-      accessToken: access_token,
-      scope,
-      expires: sessionExpiration,
-      onlineAccessInfo: rest,
-    });
-  } else {
-    const responseBody = postResponse.body as AccessTokenResponse;
-    return new Session({
-      id: getOfflineId(config)(shop),
-      shop,
-      state: stateFromCookie,
-      isOnline,
-      accessToken: responseBody.access_token,
-      scope: responseBody.scope,
-    });
-  }
 }
 
 function throwIfCustomStoreApp(

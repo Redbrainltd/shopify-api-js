@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -27,9 +27,7 @@ interface CloseArgs {
 }
 interface HoldArgs {
   [key: string]: unknown;
-  reason?: unknown;
-  reason_notes?: unknown;
-  notify_merchant?: unknown;
+  fulfillment_hold?: unknown;
   body?: {[key: string]: unknown} | null;
 }
 interface MoveArgs {
@@ -47,6 +45,7 @@ interface ReleaseHoldArgs {
 }
 interface RescheduleArgs {
   [key: string]: unknown;
+  new_fulfill_at?: unknown;
   body?: {[key: string]: unknown} | null;
 }
 interface SetFulfillmentOrdersDeadlineArgs {
@@ -57,13 +56,11 @@ interface SetFulfillmentOrdersDeadlineArgs {
 }
 
 export class FulfillmentOrder extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'fulfillment_order';
-  protected static PLURAL_NAME = 'fulfillment_orders';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "fulfillment_orders/<id>.json"},
     {"http_method": "get", "operation": "get", "ids": ["order_id"], "path": "orders/<order_id>/fulfillment_orders.json"},
     {"http_method": "post", "operation": "cancel", "ids": ["id"], "path": "fulfillment_orders/<id>/cancel.json"},
@@ -75,6 +72,12 @@ export class FulfillmentOrder extends Base {
     {"http_method": "post", "operation": "reschedule", "ids": ["id"], "path": "fulfillment_orders/<id>/reschedule.json"},
     {"http_method": "post", "operation": "set_fulfillment_orders_deadline", "ids": [], "path": "fulfillment_orders/set_fulfillment_orders_deadline.json"}
   ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "fulfillment_order",
+      "plural": "fulfillment_orders"
+    }
+  ];
 
   public static async find(
     {
@@ -84,10 +87,11 @@ export class FulfillmentOrder extends Base {
   ): Promise<FulfillmentOrder | null> {
     const result = await this.baseFind<FulfillmentOrder>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -96,7 +100,7 @@ export class FulfillmentOrder extends Base {
       order_id = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<FulfillmentOrder[]> {
+  ): Promise<FindAllResponse<FulfillmentOrder>> {
     const response = await this.baseFind<FulfillmentOrder>({
       session: session,
       urlIds: {"order_id": order_id},
@@ -147,9 +151,7 @@ export class FulfillmentOrder extends Base {
 
   public async hold(
     {
-      reason = null,
-      reason_notes = null,
-      notify_merchant = null,
+      fulfillment_hold = null,
       body = null,
       ...otherArgs
     }: HoldArgs
@@ -159,7 +161,7 @@ export class FulfillmentOrder extends Base {
       operation: "hold",
       session: this.session,
       urlIds: {"id": this.id},
-      params: {"reason": reason, "reason_notes": reason_notes, "notify_merchant": notify_merchant, ...otherArgs},
+      params: {"fulfillment_hold": fulfillment_hold, ...otherArgs},
       body: body,
       entity: this,
     });
@@ -227,6 +229,7 @@ export class FulfillmentOrder extends Base {
 
   public async reschedule(
     {
+      new_fulfill_at = null,
       body = null,
       ...otherArgs
     }: RescheduleArgs
@@ -236,7 +239,7 @@ export class FulfillmentOrder extends Base {
       operation: "reschedule",
       session: this.session,
       urlIds: {"id": this.id},
-      params: {...otherArgs},
+      params: {"new_fulfill_at": new_fulfill_at, ...otherArgs},
       body: body,
       entity: this,
     });
@@ -266,21 +269,21 @@ export class FulfillmentOrder extends Base {
   }
 
   public assigned_location: {[key: string]: unknown} | null;
-  public assigned_location_id: number | null;
+  public assigned_location_id: string | null;
   public created_at: string | null;
   public delivery_method: {[key: string]: unknown} | null;
   public destination: {[key: string]: unknown} | null;
   public fulfill_at: string | null;
   public fulfill_by: string | null;
   public fulfillment_holds: {[key: string]: unknown}[] | null;
-  public id: number | null;
+  public id: string | null;
   public international_duties: {[key: string]: unknown} | null;
   public line_items: {[key: string]: unknown}[] | null;
   public merchant_requests: {[key: string]: unknown}[] | null;
-  public order_id: number | null;
+  public order_id: string | null;
   public request_status: string | null;
-  public shop_id: number | null;
+  public shop_id: string | null;
   public status: string | null;
   public supported_actions: string[] | null;
-  public updated_at: {[key: string]: unknown} | null;
+  public updated_at: string | null;
 }

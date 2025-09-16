@@ -3,7 +3,7 @@
 ***********************************************************************************************************************/
 
 import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -22,18 +22,22 @@ interface CsrArgs {
 }
 
 export class ApplePayCertificate extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'apple_pay_certificate';
-  protected static PLURAL_NAME = 'apple_pay_certificates';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "apple_pay_certificates/<id>.json"},
     {"http_method": "get", "operation": "csr", "ids": ["id"], "path": "apple_pay_certificates/<id>/csr.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "apple_pay_certificates/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "apple_pay_certificates.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "apple_pay_certificates/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "apple_pay_certificate",
+      "plural": "apple_pay_certificates"
+    }
   ];
 
   public static async find(
@@ -44,10 +48,11 @@ export class ApplePayCertificate extends Base {
   ): Promise<ApplePayCertificate | null> {
     const result = await this.baseFind<ApplePayCertificate>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -87,7 +92,7 @@ export class ApplePayCertificate extends Base {
     return response ? response.body : null;
   }
 
-  public id: number | null;
+  public id: string | null;
   public merchant_id: string | null;
   public status: string | null;
 }

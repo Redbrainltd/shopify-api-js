@@ -29,7 +29,6 @@ describe('Config object', () => {
 
     expect(config.apiKey).toEqual(validParams.apiKey);
     expect(config.apiSecretKey).toEqual(validParams.apiSecretKey);
-    expect(config.scopes.equals(validParams.scopes)).toBeTruthy();
     expect(config.hostName).toEqual(validParams.hostName);
   });
 
@@ -55,16 +54,6 @@ describe('Config object', () => {
     }
 
     invalid = {...validParams};
-    invalid.scopes = [];
-    try {
-      validateConfig(invalid);
-      fail('Initializing without scopes did not throw an exception');
-    } catch (error) {
-      expect(error).toBeInstanceOf(ShopifyErrors.ShopifyError);
-      expect(error.message).toContain('Missing values for: scopes');
-    }
-
-    invalid = {...validParams};
     invalid.hostName = '';
     try {
       validateConfig(invalid);
@@ -86,13 +75,64 @@ describe('Config object', () => {
     expect(() => validateConfig(empty)).toThrow(ShopifyErrors.ShopifyError);
   });
 
-  it("ignores an empty 'scopes' when isCustomStoreApp is true", () => {
+  it("ignores a missing 'scopes' when isCustomStoreApp is true", () => {
     validParams.isCustomStoreApp = true;
+    validParams.adminApiAccessToken = 'token';
     delete (validParams as any).scopes;
 
     expect(() => validateConfig(validParams)).not.toThrow(
       ShopifyErrors.ShopifyError,
     );
+    validParams.isCustomStoreApp = false;
+  });
+
+  it('scopes can be not defined', () => {
+    delete (validParams as any).scopes;
+
+    expect(() => validateConfig(validParams)).not.toThrow(
+      ShopifyErrors.ShopifyError,
+    );
+  });
+
+  it("ignores a missing 'apiKey' when isCustomStoreApp is true", () => {
+    validParams.isCustomStoreApp = true;
+    validParams.adminApiAccessToken = 'token';
+    delete (validParams as any).apiKey;
+
+    expect(() => validateConfig(validParams)).not.toThrow(
+      ShopifyErrors.ShopifyError,
+    );
+    validParams.isCustomStoreApp = false;
+  });
+
+  it('requires adminApiAccessToken when isCustomStoreApp is true', () => {
+    const invalid: ConfigParams = {...validParams};
+    invalid.isCustomStoreApp = true;
+
+    try {
+      validateConfig(invalid);
+      fail(
+        'Initializing with isCustomStoreApp=true without adminApiAccessToken did not throw an exception',
+      );
+    } catch (error) {
+      expect(error).toBeInstanceOf(ShopifyErrors.ShopifyError);
+      expect(error.message).toContain(
+        'Missing values for: adminApiAccessToken',
+      );
+    }
+  });
+
+  it(`logs warning if adminApiAccessToken same value as apiSecretKey`, () => {
+    validParams.isCustomStoreApp = true;
+    validParams.adminApiAccessToken = validParams.apiSecretKey;
+
+    const config = validateConfig(validParams);
+
+    expect(config.logger.log).toHaveBeenCalledWith(
+      LogSeverity.Warning,
+      expect.stringContaining('adminApiAccessToken is set'),
+    );
+    validParams.isCustomStoreApp = false;
   });
 
   it('can partially override logger settings', () => {
@@ -121,51 +161,14 @@ describe('Config object', () => {
     expect(config.hostName).toEqual('my-host-name');
   });
 
-  [true, false].forEach((isPrivateApp) => {
-    describe(`isPrivateApp (TO BE DEPRECATED IN 7.0.0) is ${isPrivateApp}`, () => {
-      it(`logs deprecation`, () => {
-        const {isCustomStoreApp, ...params} = validParams;
-        Object.assign(params, {isPrivateApp});
+  it('requires apiVersion to be provided', () => {
+    const params = {...validParams};
+    delete (params as any).apiVersion;
 
-        const config = validateConfig(params);
-
-        expect(config.logger.log).toHaveBeenCalledWith(
-          LogSeverity.Warning,
-          expect.stringContaining('[Deprecated | 7.0.0]'),
-        );
-      });
-
-      it(`sets isCustomStoreApp to value of isPrivateApp if isCustomStoreApp not explicitly set`, () => {
-        const {isCustomStoreApp, ...params} = validParams;
-        Object.assign(params, {isPrivateApp});
-
-        const config = validateConfig(params);
-
-        expect(config.isCustomStoreApp).toBe(isPrivateApp);
-        expect('isPrivateApp' in config).toBe(false);
-      });
-
-      it(`ignores value of isPrivateApp if isCustomStoreApp explicitly set`, () => {
-        validParams.isCustomStoreApp = !isPrivateApp;
-        const params = {...validParams};
-        Object.assign(params, {isPrivateApp});
-
-        const config = validateConfig(params);
-
-        expect(config.isCustomStoreApp).toBe(!isPrivateApp);
-        expect('isPrivateApp' in config).toBe(false);
-      });
-
-      if (isPrivateApp) {
-        it("ignores an empty 'scopes' when isPrivateApp is true", () => {
-          const {isCustomStoreApp, scopes, ...params} = validParams;
-          Object.assign(params, {isPrivateApp: true});
-
-          expect(() => validateConfig(validParams)).not.toThrow(
-            ShopifyErrors.ShopifyError,
-          );
-        });
-      }
-    });
+    expect(() => validateConfig(params)).toThrow(
+      new ShopifyErrors.ShopifyError(
+        'Cannot initialize Shopify API Library. Missing values for: apiVersion. For apiVersion, please specify an explicit API version (e.g., ApiVersion.July25). See https://shopify.dev/docs/api/usage/versioning for more information.',
+      ),
+    );
   });
 });

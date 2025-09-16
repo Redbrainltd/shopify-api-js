@@ -1,6 +1,4 @@
-export interface Headers {
-  [key: string]: string | string[];
-}
+export type Headers = Record<string, string | string[]>;
 
 export interface NormalizedRequest {
   method: string;
@@ -20,13 +18,20 @@ export type AdapterRequest = any;
 export type AdapterResponse = any;
 export type AdapterHeaders = any;
 export interface AdapterArgs {
+  /**
+   * The raw request, from the app's framework.
+   */
   rawRequest: AdapterRequest;
+  /**
+   * The raw response, from the app's framework. Only applies to frameworks that expose an API similar to Node's HTTP
+   * module.
+   */
   rawResponse?: AdapterResponse;
 }
 
 export type AbstractFetchFunc = (
-  req: NormalizedRequest,
-) => Promise<NormalizedResponse>;
+  ...params: Parameters<typeof fetch>
+) => Promise<Response>;
 
 export type AbstractConvertRequestFunc = (
   adapterArgs: AdapterArgs,

@@ -1,7 +1,7 @@
-import {DataType} from '../../lib/clients/http_client/types';
+import {DataType} from '../../lib/clients/types';
 import ProcessedQuery from '../../lib/utils/processed-query';
 
-import {initTestRequest, initTestResponse} from './test_config_types';
+import {TestType, initTestRequest, initTestResponse} from './test_config_types';
 
 const postData = {
   title: 'Test product',
@@ -27,6 +27,29 @@ const graphqlQuery = `
   `;
 
 export const testSuite = [
+  {
+    name: 'can make GraphQL request',
+    config: {
+      testRequest: initTestRequest({
+        type: TestType.Graphql,
+      }),
+      expectedResponse: initTestResponse(),
+    },
+  },
+  {
+    name: 'can make GraphQL request with errors',
+    config: {
+      testRequest: initTestRequest({
+        type: TestType.Graphql,
+        url: '/url/path/400',
+      }),
+      expectedResponse: initTestResponse({
+        statusCode: 400,
+        statusText: 'Did not work',
+        errorType: 'HttpBadRequestError',
+      }),
+    },
+  },
   {
     name: 'can make GET request',
     config: {
@@ -170,6 +193,18 @@ export const testSuite = [
     },
   },
   {
+    name: 'gracefully handles 503 error',
+    config: {
+      testRequest: initTestRequest({url: '/url/path/503'}),
+      expectedResponse: initTestResponse({
+        statusCode: 503,
+        statusText: 'Did not work',
+        errorType: 'HttpInternalError',
+        expectRequestId: 'Request id header',
+      }),
+    },
+  },
+  {
     name: 'allows custom headers',
     config: {
       testRequest: initTestRequest({
@@ -202,17 +237,6 @@ export const testSuite = [
       }),
       expectedResponse: initTestResponse({
         headers: {'user-agent': 'My lowercase agent'},
-      }),
-    },
-  },
-  {
-    name: 'fails with invalid retry count',
-    config: {
-      testRequest: initTestRequest({tries: -1}),
-      expectedResponse: initTestResponse({
-        statusCode: 500,
-        statusText: 'Did not work',
-        errorType: 'HttpRequestError',
       }),
     },
   },

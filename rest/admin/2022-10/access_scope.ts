@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -13,15 +13,19 @@ interface AllArgs {
 }
 
 export class AccessScope extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'access_scope';
-  protected static PLURAL_NAME = 'access_scopes';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static CUSTOM_PREFIX: string | null = "/admin/oauth";
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static customPrefix: string | null = "/admin/oauth";
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": [], "path": "access_scopes.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "access_scope",
+      "plural": "access_scopes"
+    }
   ];
 
   public static async all(
@@ -29,7 +33,7 @@ export class AccessScope extends Base {
       session,
       ...otherArgs
     }: AllArgs
-  ): Promise<AccessScope[]> {
+  ): Promise<FindAllResponse<AccessScope>> {
     const response = await this.baseFind<AccessScope>({
       session: session,
       urlIds: {},

@@ -1,3 +1,4 @@
+/* eslint-disable no-fallthrough */
 import {InvalidSession} from '../error';
 import {OnlineAccessInfo} from '../auth/oauth/types';
 import {AuthScopes} from '../auth/scopes';
@@ -14,12 +15,14 @@ const propertiesToSave = [
   'expires',
   'onlineAccessInfo',
 ];
+
 /**
  * Stores App information from logged in merchants so they can make authenticated requests to the Admin API.
  */
 export class Session {
   public static fromPropertyArray(
     entries: [string, string | number | boolean][],
+    returnUserData = false,
   ): Session {
     if (!Array.isArray(entries)) {
       throw new InvalidSession(
@@ -39,70 +42,186 @@ export class Session {
               return ['accessToken', value];
             case 'onlineaccessinfo':
               return ['onlineAccessInfo', value];
+            case 'userid':
+              return ['userId', value];
+            case 'firstname':
+              return ['firstName', value];
+            case 'lastname':
+              return ['lastName', value];
+            case 'accountowner':
+              return ['accountOwner', value];
+            case 'emailverified':
+              return ['emailVerified', value];
             default:
               return [key.toLowerCase(), value];
           }
-        })
-        // Sanitize values
-        .map(([key, value]) => {
-          switch (key) {
-            case 'isOnline':
-              if (typeof value === 'string') {
-                return [key, value.toString().toLowerCase() === 'true'];
-              } else if (typeof value === 'number') {
-                return [key, Boolean(value)];
-              }
-              return [key, value];
-            case 'scope':
-              return [key, value.toString()];
-            case 'expires':
-              return [key, value ? new Date(Number(value)) : undefined];
-            case 'onlineAccessInfo':
-              return [
-                key,
-                {
-                  associated_user: {
-                    id: Number(value),
-                  },
-                },
-              ];
-            default:
-              return [key, value];
-          }
         }),
-    ) as any;
-    Object.setPrototypeOf(obj, Session.prototype);
-    return obj;
+    );
+
+    const sessionData = {} as SessionParams;
+    const onlineAccessInfo = {
+      associated_user: {},
+    } as OnlineAccessInfo;
+    Object.entries(obj).forEach(([key, value]) => {
+      switch (key) {
+        case 'isOnline':
+          if (typeof value === 'string') {
+            sessionData[key] = value.toString().toLowerCase() === 'true';
+          } else if (typeof value === 'number') {
+            sessionData[key] = Boolean(value);
+          } else {
+            sessionData[key] = value;
+          }
+          break;
+        case 'scope':
+          sessionData[key] = value.toString();
+          break;
+        case 'expires':
+          sessionData[key] = value ? new Date(Number(value)) : undefined;
+          break;
+        case 'onlineAccessInfo':
+          onlineAccessInfo.associated_user.id = Number(value);
+          break;
+        case 'userId':
+          if (returnUserData) {
+            onlineAccessInfo.associated_user.id = Number(value);
+            break;
+          }
+        case 'firstName':
+          if (returnUserData) {
+            onlineAccessInfo.associated_user.first_name = String(value);
+            break;
+          }
+        case 'lastName':
+          if (returnUserData) {
+            onlineAccessInfo.associated_user.last_name = String(value);
+            break;
+          }
+        case 'email':
+          if (returnUserData) {
+            onlineAccessInfo.associated_user.email = String(value);
+            break;
+          }
+        case 'accountOwner':
+          if (returnUserData) {
+            onlineAccessInfo.associated_user.account_owner = Boolean(value);
+            break;
+          }
+        case 'locale':
+          if (returnUserData) {
+            onlineAccessInfo.associated_user.locale = String(value);
+            break;
+          }
+        case 'collaborator':
+          if (returnUserData) {
+            onlineAccessInfo.associated_user.collaborator = Boolean(value);
+            break;
+          }
+        case 'emailVerified':
+          if (returnUserData) {
+            onlineAccessInfo.associated_user.email_verified = Boolean(value);
+            break;
+          }
+        // Return any user keys as passed in
+        default:
+          sessionData[key] = value;
+      }
+    });
+    if (sessionData.isOnline) {
+      sessionData.onlineAccessInfo = onlineAccessInfo;
+    }
+    const session = new Session(sessionData);
+    return session;
   }
 
+  /**
+   * The unique identifier for the session.
+   */
   readonly id: string;
+  /**
+   * The Shopify shop domain, such as `example.myshopify.com`.
+   */
   public shop: string;
+  /**
+   * The state of the session. Used for the OAuth authentication code flow.
+   */
   public state: string;
+  /**
+   * Whether the access token in the session is online or offline.
+   */
   public isOnline: boolean;
+  /**
+   * The desired scopes for the access token, at the time the session was created.
+   */
   public scope?: string;
+  /**
+   * The date the access token expires.
+   */
   public expires?: Date;
+  /**
+   * The access token for the session.
+   */
   public accessToken?: string;
+  /**
+   * Information on the user for the session. Only present for online sessions.
+   */
   public onlineAccessInfo?: OnlineAccessInfo;
 
   constructor(params: SessionParams) {
     Object.assign(this, params);
   }
 
-  public isActive(scopes: AuthScopes | string | string[]): boolean {
-    const scopesObject =
-      scopes instanceof AuthScopes ? scopes : new AuthScopes(scopes);
-
-    const scopesUnchanged = scopesObject.equals(this.scope);
-    if (
-      scopesUnchanged &&
-      this.accessToken &&
-      (!this.expires || this.expires >= new Date())
-    ) {
-      return true;
-    }
-    return false;
+  /**
+   * Whether the session is active. Active sessions have an access token that is not expired, and has has the given
+   * scopes if scopes is equal to a truthy value.
+   */
+  public isActive(
+    scopes: AuthScopes | string | string[] | undefined,
+    withinMillisecondsOfExpiry = 500,
+  ): boolean {
+    const hasAccessToken = Boolean(this.accessToken);
+    const isTokenNotExpired = !this.isExpired(withinMillisecondsOfExpiry);
+    const isScopeChanged = this.isScopeChanged(scopes);
+    return !isScopeChanged && hasAccessToken && isTokenNotExpired;
   }
 
+  /**
+   * Whether the access token includes the given scopes if they are provided.
+   */
+  public isScopeChanged(
+    scopes: AuthScopes | string | string[] | undefined,
+  ): boolean {
+    if (typeof scopes === 'undefined') {
+      return false;
+    }
+
+    return !this.isScopeIncluded(scopes);
+  }
+
+  /**
+   * Whether the access token includes the given scopes.
+   */
+  public isScopeIncluded(scopes: AuthScopes | string | string[]): boolean {
+    const requiredScopes =
+      scopes instanceof AuthScopes ? scopes : new AuthScopes(scopes);
+    const sessionScopes = new AuthScopes(this.scope);
+
+    return sessionScopes.has(requiredScopes);
+  }
+
+  /**
+   * Whether the access token is expired.
+   */
+  public isExpired(withinMillisecondsOfExpiry = 0): boolean {
+    return Boolean(
+      this.expires &&
+        this.expires.getTime() - withinMillisecondsOfExpiry < Date.now(),
+    );
+  }
+
+  /**
+   * Converts an object with data into a Session.
+   */
   public toObject(): SessionParams {
     const object: SessionParams = {
       id: this.id,
@@ -126,6 +245,9 @@ export class Session {
     return object;
   }
 
+  /**
+   * Checks whether the given session is equal to this session.
+   */
   public equals(other: Session | undefined): boolean {
     if (!other) return false;
 
@@ -137,16 +259,21 @@ export class Session {
 
     if (!mandatoryPropsMatch) return false;
 
-    const copyA = this.toPropertyArray();
+    const copyA = this.toPropertyArray(true);
     copyA.sort(([k1], [k2]) => (k1 < k2 ? -1 : 1));
 
-    const copyB = other.toPropertyArray();
+    const copyB = other.toPropertyArray(true);
     copyB.sort(([k1], [k2]) => (k1 < k2 ? -1 : 1));
 
     return JSON.stringify(copyA) === JSON.stringify(copyB);
   }
 
-  public toPropertyArray(): [string, string | number | boolean][] {
+  /**
+   * Converts the session into an array of key-value pairs.
+   */
+  public toPropertyArray(
+    returnUserData = false,
+  ): [string, string | number | boolean][] {
     return (
       Object.entries(this)
         .filter(
@@ -156,16 +283,32 @@ export class Session {
             value !== null,
         )
         // Prepare values for db storage
-        .map(([key, value]) => {
+        .flatMap(([key, value]): [string, string | number | boolean][] => {
           switch (key) {
             case 'expires':
-              return [key, value ? value.getTime() : undefined];
+              return [[key, value ? value.getTime() : undefined]];
             case 'onlineAccessInfo':
-              return [key, value?.associated_user?.id];
+              // eslint-disable-next-line no-negated-condition
+              if (!returnUserData) {
+                return [[key, value.associated_user.id]];
+              } else {
+                return [
+                  ['userId', value?.associated_user?.id],
+                  ['firstName', value?.associated_user?.first_name],
+                  ['lastName', value?.associated_user?.last_name],
+                  ['email', value?.associated_user?.email],
+                  ['locale', value?.associated_user?.locale],
+                  ['emailVerified', value?.associated_user?.email_verified],
+                  ['accountOwner', value?.associated_user?.account_owner],
+                  ['collaborator', value?.associated_user?.collaborator],
+                ];
+              }
             default:
-              return [key, value];
+              return [[key, value]];
           }
         })
+        // Filter out tuples with undefined values
+        .filter(([_key, value]) => value !== undefined)
     );
   }
 }

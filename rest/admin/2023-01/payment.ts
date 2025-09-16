@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -27,20 +27,24 @@ interface CountArgs {
 }
 
 export class Payment extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'payment';
-  protected static PLURAL_NAME = 'payments';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {
     "transaction": Transaction,
     "checkout": Checkout
   };
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "count", "ids": ["checkout_id"], "path": "checkouts/<checkout_id>/payments/count.json"},
     {"http_method": "get", "operation": "get", "ids": ["checkout_id"], "path": "checkouts/<checkout_id>/payments.json"},
     {"http_method": "get", "operation": "get", "ids": ["checkout_id", "id"], "path": "checkouts/<checkout_id>/payments/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": ["checkout_id"], "path": "checkouts/<checkout_id>/payments.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "payment",
+      "plural": "payments"
+    }
   ];
 
   public static async find(
@@ -52,10 +56,11 @@ export class Payment extends Base {
   ): Promise<Payment | null> {
     const result = await this.baseFind<Payment>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "checkout_id": checkout_id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -64,7 +69,7 @@ export class Payment extends Base {
       checkout_id = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Payment[]> {
+  ): Promise<FindAllResponse<Payment>> {
     const response = await this.baseFind<Payment>({
       session: session,
       urlIds: {"checkout_id": checkout_id},
@@ -96,7 +101,7 @@ export class Payment extends Base {
 
   public checkout: Checkout | null | {[key: string]: any};
   public credit_card: {[key: string]: unknown} | null;
-  public id: number | null;
+  public id: string | null;
   public next_action: {[key: string]: unknown} | null;
   public payment_processing_error_message: string | null;
   public transaction: Transaction | null | {[key: string]: any};

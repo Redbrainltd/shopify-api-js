@@ -1,3 +1,4 @@
+import {ValidationErrorReason, ValidationInvalid} from '../utils/types';
 import {AdapterArgs} from '../../runtime/types';
 import {Session} from '../session/session';
 
@@ -13,18 +14,24 @@ export type WebhookHandlerFunction = (
   body: string,
   webhookId: string,
   apiVersion?: string,
+  subTopic?: string,
+  context?: any,
 ) => Promise<void>;
 
 interface BaseWebhookHandler {
   id?: string;
   includeFields?: string[];
   metafieldNamespaces?: string[];
+  subTopic?: string;
+  context?: any;
 }
 
 export interface HttpWebhookHandler extends BaseWebhookHandler {
   deliveryMethod: DeliveryMethod.Http;
-  privateMetafieldNamespaces?: string[];
   callbackUrl: string;
+}
+
+export interface HttpWebhookHandlerWithCallback extends HttpWebhookHandler {
   callback: WebhookHandlerFunction;
 }
 
@@ -41,14 +48,17 @@ export interface PubSubWebhookHandler extends BaseWebhookHandler {
 
 export type WebhookHandler =
   | HttpWebhookHandler
+  | HttpWebhookHandlerWithCallback
   | EventBridgeWebhookHandler
   | PubSubWebhookHandler;
 
-export interface WebhookRegistry {
-  // See https://shopify.dev/docs/api/admin-graphql/latest/enums/webhooksubscriptiontopic for available topics
-  [topic: string]: WebhookHandler[];
-}
+// See https://shopify.dev/docs/api/admin-graphql/latest/enums/webhooksubscriptiontopic for available topics
+export type WebhookRegistry<Handler extends WebhookHandler = WebhookHandler> =
+  Record<string, Handler[]>;
 
+// eslint-disable-next-line no-warning-comments
+// TODO Rethink the wording for this enum - the operations we're doing are actually "subscribing" and "unsubscribing"
+// Consider changing the values when releasing v12.0.0 when it can be safely deprecated
 export enum WebhookOperation {
   Create = 'create',
   Update = 'update',
@@ -63,28 +73,33 @@ export interface RegisterResult {
   success: boolean;
   deliveryMethod: DeliveryMethod;
   result: unknown;
+  operation: WebhookOperation;
 }
 
-export interface RegisterReturn {
-  [topic: string]: RegisterResult[];
+export type RegisterReturn = Record<string, RegisterResult[]>;
+
+interface WebhookHttpEndpoint {
+  __typename: 'WebhookHttpEndpoint';
+  callbackUrl: string;
 }
+interface WebhookEventBridgeEndpoint {
+  __typename: 'WebhookEventBridgeEndpoint';
+  arn: string;
+}
+interface WebhookPubSubEndpoint {
+  __typename: 'WebhookPubSubEndpoint';
+  pubSubProject: string;
+  pubSubTopic: string;
+}
+
+type WebhookEndpoint =
+  | WebhookHttpEndpoint
+  | WebhookEventBridgeEndpoint
+  | WebhookPubSubEndpoint;
 
 export interface WebhookCheckResponseNode<
   T = {
-    endpoint:
-      | {
-          __typename: 'WebhookHttpEndpoint';
-          callbackUrl: string;
-        }
-      | {
-          __typename: 'WebhookEventBridgeEndpoint';
-          arn: string;
-        }
-      | {
-          __typename: 'WebhookPubSubEndpoint';
-          pubSubProject: string;
-          pubSubTopic: string;
-        };
+    endpoint: WebhookEndpoint;
   },
 > {
   node: {
@@ -92,26 +107,65 @@ export interface WebhookCheckResponseNode<
     topic: string;
     includeFields: string[];
     metafieldNamespaces: string[];
-    privateMetafieldNamespaces: string[];
   } & T;
 }
 
 export interface WebhookCheckResponse<T = WebhookCheckResponseNode> {
-  data: {
-    webhookSubscriptions: {
-      edges: T[];
-      pageInfo: {
-        endCursor: string;
-        hasNextPage: boolean;
-      };
+  webhookSubscriptions: {
+    edges: T[];
+    pageInfo: {
+      endCursor: string;
+      hasNextPage: boolean;
     };
   };
 }
 
-export interface AddHandlersParams {
-  [topic: string]: WebhookHandler | WebhookHandler[];
-}
+export type AddHandlersParams = Record<
+  string,
+  WebhookHandler | WebhookHandler[]
+>;
 
 export interface WebhookProcessParams extends AdapterArgs {
   rawBody: string;
+  context?: any;
 }
+
+export interface WebhookValidateParams extends WebhookProcessParams {}
+
+export const WebhookValidationErrorReason = {
+  ...ValidationErrorReason,
+  MissingHeaders: 'missing_headers',
+} as const;
+
+export type WebhookValidationErrorReasonType =
+  (typeof WebhookValidationErrorReason)[keyof typeof WebhookValidationErrorReason];
+
+export interface WebhookFields {
+  webhookId: string;
+  apiVersion: string;
+  domain: string;
+  hmac: string;
+  topic: string;
+  subTopic?: string;
+}
+
+export interface WebhookValidationInvalid
+  extends Omit<ValidationInvalid, 'reason'> {
+  valid: false;
+  reason: WebhookValidationErrorReasonType;
+}
+
+export interface WebhookValidationMissingHeaders
+  extends WebhookValidationInvalid {
+  reason: typeof WebhookValidationErrorReason.MissingHeaders;
+  missingHeaders: string[];
+}
+
+export interface WebhookValidationValid extends WebhookFields {
+  valid: true;
+}
+
+export type WebhookValidation =
+  | WebhookValidationValid
+  | WebhookValidationInvalid
+  | WebhookValidationMissingHeaders;

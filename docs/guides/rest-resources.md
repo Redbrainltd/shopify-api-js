@@ -8,7 +8,38 @@ To make it easier to interact with the API, this library provides resource class
 > **Note**: we provide auto-generated resources for all **_stable_** API versions.
 > If your app is using `unstable` or a Release Candidate, you can still import REST resources (see [mounting REST resources](#mounting-rest-resources) below) for other versions, but we'll log a warning to remind you to update when you're ready.
 
+## Resource Methods
+
+| Resource Method | Description                                                                                   | Admin API endpoint                                               | Return                                                                                                |
+| --------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `find`          | Fetch a single resource by its ID                                                             | `GET /admin/api/{version}/{resource_name}/{resource_id}.json`    | A single resource                                                                                     |
+| `all`           | Fetch all resources of a given type                                                           | `GET /admin/api/{version}/{resource_name}.json`                  | [An array of resources](#all-return-value)                                                            |
+| `count`         | Fetch the number of resources of a given type                                                 | `GET /admin/api/{version}/{resource_name}/count.json`            | Integer                                                                                               |
+| `save`          | If the primary key for the resource **is not set**, a new resource will be created in Shopify | `POST /admin/api/{version}/{resource_name}.json`                 | void Promise (If option update: true is passed, the resource will be updated with the returned data.) |
+| `save`          | If the primary key for a resource **is set** the resource in Shopify will be updated          | `PUT /admin/api/{version}/{resource_name}/{resource_id}.json`    | Promise void (If option update: true is passed, the resource will be updated with the returned data.) |
+| `delete`        | Delete an existing resource                                                                   | `DELETE /admin/api/{version}/{resource_name}/{resource_id}.json` | void Promise                                                                                          |
+
+Some resources will have additional methods to help with common interactions, such as the [orders method on the customer resource](https://shopify.dev/docs/api/admin-rest/2023-07/resources/customer#get-customers-customer-id-orders). Review the [REST API reference](https://shopify.dev/docs/api/admin-rest) documentation for more information.
+
+### All Return Value
+
+The all method will return an array of resources, along with the response headers and pagination information.
+
+```
+FindAllResponse<T = Base> {
+    data: T[];
+    headers: Headers;
+    pageInfo?: PageInfo;
+}
+```
+
+Please visit our [REST API reference documentation](https://shopify.dev/docs/api/admin-rest) for detailed instructions on how to call each of the endpoints.
+
+## Example Usage
+
 Below is an example of how REST resources can make it easier to fetch the first product and update it:
+
+### Update a Resource
 
 <div>With a plain REST client:
 
@@ -16,7 +47,7 @@ Below is an example of how REST resources can make it easier to fetch the first 
 // App must provide response types
 interface ProductResponse {
   product: {
-    id: number;
+    id: string;
     title: string;
     // ...
   };
@@ -69,6 +100,7 @@ const product = await shopify.rest.Product.find({session, id: '7504536535062'});
 
 product.title = 'A new title';
 
+// After promise resolves, the product will be updated with the returned data
 await product.save({
   update: true,
 });
@@ -76,14 +108,53 @@ await product.save({
 
 </div>
 
-The resource classes provide representations of all endpoints for the API resource they cover. A few examples:
+### Create a resource
 
-1. `GET /products/{product_id}.json` maps to `Product.find()`
-1. `POST /products.json` maps to `product.save()` (as an instance method)
-1. `GET /products.json` maps to `Product.all()`
-1. `GET /products/count.json` maps to `Product.count()`
+```ts
+const product = new shopify.rest.Product({session: session});
+product.title = 'Burton Custom Freestyle 151';
+product.body_html = '<strong>Good snowboard!</strong>';
+product.vendor = 'Burton';
+product.product_type = 'Snowboard';
+product.status = 'draft';
 
-Please visit our [REST API reference documentation](https://shopify.dev/docs/api/admin-rest) for detailed instructions on how to call each of the endpoints.
+// After promise resolves, product will be updated with the returned data
+await product.save({
+  update: true,
+});
+```
+
+### Get a resource
+
+```ts
+// Session is built by the OAuth process
+
+const product = await shopify.rest.Product.find({
+  session: session,
+  id: "632910392",
+});
+
+console.log(product);
+```
+
+### Get all resources
+
+```ts
+// Session is built by the OAuth process
+
+const products = await shopify.rest.Product.all({
+  session: session,
+});
+
+// The list of products
+console.log(products.data);
+
+// The pagination information
+console.log(products.pageInfo);
+
+// The response headers
+console.log(products.headers);
+```
 
 ## Mounting REST resources
 
@@ -109,25 +180,28 @@ From this point, you can start using the resources to interact with the API.
 Shopify's REST API supports [cursor-based pagination](https://shopify.dev/docs/api/usage/pagination-rest), to limit the amount of data sent to an app on a single request.
 
 Each request will return the information required for an app to request the previous / next set of items.
-
-For REST resources, the class will contain the information necessary to make those requests in the `NEXT_PAGE_INFO` and `PREV_PAGE_INFO` properties.
-These values will always reflect the last request made with that class.
+For REST resources, calls to the `all` method will return the information necessary to make those requests in the `pageInfo` property.
 
 Here is an example for fetching more than one set of products from the API:
 
 ```ts
+let pageInfo;
 do {
-  const pageProducts = await shopify.rest.Product.all({
-    ...shopify.rest.Product.NEXT_PAGE_INFO?.query,
+  const response = await shopify.rest.Product.all({
+    ...pageInfo?.nextPage?.query,
     session,
-    status: 'active',
+    limit: 10,
   });
 
+  const pageProducts = response.data;
   // ... use pageProducts
-} while (shopify.rest.Product.NEXT_PAGE_INFO);
+
+  pageInfo = response.pageInfo;
+} while (pageInfo?.nextPage);
 ```
 
-> **Note**: these properties are not thread-safe because they're stored statically in the class.
-> If you are using this feature to send requests in parallel, you can store the `query` property in a thread-safe way, since it's a plain JavaScript object.
+> [!NOTE]
+> Some resources have a `search()` method which also supports pagination, in the same way `all()` does.
+> To return the full response information from `search()`, set the `returnFullResponse` option when calling it.
 
 [Back to guide index](../../README.md#guides)

@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -32,21 +32,25 @@ interface CountArgs {
 }
 
 export class Blog extends Base {
-  public static API_VERSION = ApiVersion.October22;
+  public static apiVersion = ApiVersion.October22;
 
-  protected static NAME = 'blog';
-  protected static PLURAL_NAME = 'blogs';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {
     "metafields": Metafield
   };
-  protected static PATHS: ResourcePath[] = [
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "blogs/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "blogs/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "blogs.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "blogs/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "blogs.json"},
     {"http_method": "put", "operation": "put", "ids": ["id"], "path": "blogs/<id>.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "blog",
+      "plural": "blogs"
+    }
   ];
 
   public static async find(
@@ -58,10 +62,11 @@ export class Blog extends Base {
   ): Promise<Blog | null> {
     const result = await this.baseFind<Blog>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -90,7 +95,7 @@ export class Blog extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Blog[]> {
+  ): Promise<FindAllResponse<Blog>> {
     const response = await this.baseFind<Blog>({
       session: session,
       urlIds: {},
@@ -125,7 +130,7 @@ export class Blog extends Base {
   public feedburner: string | null;
   public feedburner_location: string | null;
   public handle: string | null;
-  public id: number | null;
+  public id: string | null;
   public metafields: Metafield[] | null | {[key: string]: any};
   public tags: string | null;
   public template_suffix: string | null;

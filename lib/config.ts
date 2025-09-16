@@ -1,17 +1,17 @@
 import {ShopifyError} from './error';
 import {ConfigInterface, ConfigParams} from './base-types';
-import {LATEST_API_VERSION, LogSeverity} from './types';
+import {LogSeverity} from './types';
 import {AuthScopes} from './auth/scopes';
 import {logger as createLogger} from './logger';
 
-export function validateConfig(params: ConfigParams<any>): ConfigInterface {
-  const config: ConfigInterface = {
+export function validateConfig<Params extends ConfigParams>(
+  params: Params,
+): ConfigInterface<Params> {
+  const config = {
     apiKey: '',
     apiSecretKey: '',
-    scopes: new AuthScopes([]),
     hostName: '',
     hostScheme: 'https',
-    apiVersion: LATEST_API_VERSION,
     isEmbeddedApp: true,
     isCustomStoreApp: false,
     logger: {
@@ -20,22 +20,29 @@ export function validateConfig(params: ConfigParams<any>): ConfigInterface {
       httpRequests: false,
       timestamps: false,
     },
-  };
+    future: {},
+    _logDisabledFutureFlags: true,
+  } as ConfigInterface<Params>;
 
   // Make sure that the essential params actually have content in them
-  const mandatory: (keyof ConfigParams)[] = [
-    'apiKey',
+  const mandatory: (keyof Params)[] = [
     'apiSecretKey',
     'hostName',
+    'apiVersion',
   ];
-  if (
-    (!('isCustomStoreApp' in params) || !params.isCustomStoreApp) &&
-    // DEPRECATION: isPrivateApp to be removed in 7.0.0
-    (!('isPrivateApp' in params) || !(params as any).isPrivateApp)
-  ) {
-    mandatory.push('scopes');
+  if (!('isCustomStoreApp' in params) || !params.isCustomStoreApp) {
+    mandatory.push('apiKey');
   }
-  const missing: (keyof ConfigParams)[] = [];
+  if ('isCustomStoreApp' in params && params.isCustomStoreApp) {
+    if (
+      !('adminApiAccessToken' in params) ||
+      params.adminApiAccessToken?.length === 0
+    ) {
+      mandatory.push('adminApiAccessToken');
+    }
+  }
+
+  const missing: (keyof Params)[] = [];
   mandatory.forEach((key) => {
     if (!notEmpty(params[key])) {
       missing.push(key);
@@ -46,51 +53,54 @@ export function validateConfig(params: ConfigParams<any>): ConfigInterface {
     throw new ShopifyError(
       `Cannot initialize Shopify API Library. Missing values for: ${missing.join(
         ', ',
-      )}`,
+      )}. For apiVersion, please specify an explicit API version (e.g., ApiVersion.July25). See https://shopify.dev/docs/api/usage/versioning for more information.`,
     );
   }
 
   const {
     hostScheme,
     isCustomStoreApp,
+    adminApiAccessToken,
     userAgentPrefix,
     logger,
     privateAppStorefrontAccessToken,
     customShopDomains,
     billing,
+    future,
     ...mandatoryParams
   } = params;
 
+  let scopes;
+  if (params.scopes === undefined) {
+    scopes = undefined;
+  } else if (params.scopes instanceof AuthScopes) {
+    scopes = params.scopes;
+  } else {
+    scopes = new AuthScopes(params.scopes);
+  }
+
   Object.assign(config, mandatoryParams, {
     hostName: params.hostName.replace(/\/$/, ''),
-    scopes:
-      params.scopes instanceof AuthScopes
-        ? params.scopes
-        : new AuthScopes(params.scopes),
+    scopes,
     hostScheme: hostScheme ?? config.hostScheme,
-    isCustomStoreApp:
-      isCustomStoreApp === undefined
-        ? config.isCustomStoreApp
-        : isCustomStoreApp,
+    isCustomStoreApp: isCustomStoreApp ?? config.isCustomStoreApp,
+    adminApiAccessToken: adminApiAccessToken ?? config.adminApiAccessToken,
     userAgentPrefix: userAgentPrefix ?? config.userAgentPrefix,
     logger: {...config.logger, ...(logger || {})},
     privateAppStorefrontAccessToken:
       privateAppStorefrontAccessToken ?? config.privateAppStorefrontAccessToken,
     customShopDomains: customShopDomains ?? config.customShopDomains,
     billing: billing ?? config.billing,
+    future: future ?? config.future,
   });
 
-  if ('isPrivateApp' in params) {
-    createLogger(config).deprecated(
-      '7.0.0',
-      'The `isPrivateApp` config option has been deprecated. Please use `isCustomStoreApp` instead.',
+  if (
+    config.isCustomStoreApp &&
+    params.adminApiAccessToken === params.apiSecretKey
+  ) {
+    createLogger(config).warning(
+      "adminApiAccessToken is set to the same value as apiSecretKey. adminApiAccessToken should be set to the Admin API access token for custom store apps; apiSecretKey should be set to the custom store app's API secret key.",
     );
-
-    // only set isCustomStoreApp to value of isPrivateApp, if isCustomStoreApp hasn't been set explicitly
-    if (!('isCustomStoreApp' in params)) {
-      config.isCustomStoreApp = (params as any).isPrivateApp;
-    }
-    delete (config as any).isPrivateApp;
   }
 
   return config;
@@ -105,10 +115,7 @@ function notEmpty<T>(value: T): value is NonNullable<T> {
     : true;
 }
 
-async function defaultLogFunction(
-  severity: LogSeverity,
-  message: string,
-): Promise<void> {
+function defaultLogFunction(severity: LogSeverity, message: string): void {
   switch (severity) {
     case LogSeverity.Debug:
       console.debug(message);

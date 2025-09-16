@@ -1,6 +1,4 @@
-export interface MockResponse {
-  [key: string]: unknown;
-}
+export type MockResponse = Record<string, unknown>;
 
 export const TEST_WEBHOOK_ID = 'gid://shopify/WebhookSubscription/12345';
 
@@ -134,6 +132,9 @@ export const successResponse = {
       userErrors: [],
     },
   },
+  headers: {
+    'Content-Type': ['application/json'],
+  },
 };
 
 export const eventBridgeSuccessResponse = {
@@ -141,6 +142,9 @@ export const eventBridgeSuccessResponse = {
     eventBridgeWebhookSubscriptionCreate: {
       userErrors: [],
     },
+  },
+  headers: {
+    'Content-Type': ['application/json'],
   },
 };
 
@@ -150,6 +154,9 @@ export const pubSubSuccessResponse = {
       userErrors: [],
     },
   },
+  headers: {
+    'Content-Type': ['application/json'],
+  },
 };
 
 export const successUpdateResponse = {
@@ -157,6 +164,9 @@ export const successUpdateResponse = {
     webhookSubscriptionUpdate: {
       userErrors: [],
     },
+  },
+  headers: {
+    'Content-Type': ['application/json'],
   },
 };
 
@@ -166,6 +176,9 @@ export const eventBridgeSuccessUpdateResponse = {
       userErrors: [],
     },
   },
+  headers: {
+    'Content-Type': ['application/json'],
+  },
 };
 
 export const pubSubSuccessUpdateResponse = {
@@ -174,6 +187,9 @@ export const pubSubSuccessUpdateResponse = {
       userErrors: [],
     },
   },
+  headers: {
+    'Content-Type': ['application/json'],
+  },
 };
 
 export const successDeleteResponse = {
@@ -181,6 +197,9 @@ export const successDeleteResponse = {
     webhookSubscriptionDelete: {
       userErrors: [],
     },
+  },
+  headers: {
+    'Content-Type': ['application/json'],
   },
 };
 
@@ -193,5 +212,8 @@ export const httpFailResponse = {
     webhookSubscriptionCreate: {
       userErrors: ['this is an error'],
     },
+  },
+  headers: {
+    'Content-Type': ['application/json'],
   },
 };

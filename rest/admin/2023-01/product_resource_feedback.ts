@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -14,15 +14,19 @@ interface AllArgs {
 }
 
 export class ProductResourceFeedback extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'product_resource_feedback';
-  protected static PLURAL_NAME = 'product_resource_feedbacks';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": ["product_id"], "path": "products/<product_id>/resource_feedback.json"},
     {"http_method": "post", "operation": "post", "ids": ["product_id"], "path": "products/<product_id>/resource_feedback.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "product_resource_feedback",
+      "plural": "product_resource_feedbacks"
+    }
   ];
 
   protected static getJsonBodyName(): string
@@ -36,7 +40,7 @@ export class ProductResourceFeedback extends Base {
       product_id = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<ProductResourceFeedback[]> {
+  ): Promise<FindAllResponse<ProductResourceFeedback>> {
     const response = await this.baseFind<ProductResourceFeedback>({
       session: session,
       urlIds: {"product_id": product_id},
@@ -49,8 +53,8 @@ export class ProductResourceFeedback extends Base {
   public created_at: string | null;
   public feedback_generated_at: string | null;
   public messages: string[] | null;
-  public product_id: number | null;
-  public resource_id: number | null;
+  public product_id: string | null;
+  public resource_id: string | null;
   public resource_type: string | null;
   public resource_updated_at: string | null;
   public state: string | null;

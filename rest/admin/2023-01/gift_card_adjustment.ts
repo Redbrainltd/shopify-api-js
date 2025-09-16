@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -19,16 +19,20 @@ interface AllArgs {
 }
 
 export class GiftCardAdjustment extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'gift_card_adjustment';
-  protected static PLURAL_NAME = 'gift_card_adjustments';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "get", "operation": "get", "ids": ["gift_card_id"], "path": "gift_cards/<gift_card_id>/adjustments.json"},
     {"http_method": "get", "operation": "get", "ids": ["gift_card_id", "id"], "path": "gift_cards/<gift_card_id>/adjustments/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": ["gift_card_id"], "path": "gift_cards/<gift_card_id>/adjustments.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "gift_card_adjustment",
+      "plural": "gift_card_adjustments"
+    }
   ];
 
   protected static getJsonBodyName(): string
@@ -45,10 +49,11 @@ export class GiftCardAdjustment extends Base {
   ): Promise<GiftCardAdjustment | null> {
     const result = await this.baseFind<GiftCardAdjustment>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id, "gift_card_id": gift_card_id},
       params: {},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async all(
@@ -57,7 +62,7 @@ export class GiftCardAdjustment extends Base {
       gift_card_id = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<GiftCardAdjustment[]> {
+  ): Promise<FindAllResponse<GiftCardAdjustment>> {
     const response = await this.baseFind<GiftCardAdjustment>({
       session: session,
       urlIds: {"gift_card_id": gift_card_id},
@@ -68,15 +73,15 @@ export class GiftCardAdjustment extends Base {
   }
 
   public amount: number | null;
-  public api_client_id: number | null;
+  public api_client_id: string | null;
   public created_at: string | null;
-  public gift_card_id: number | null;
-  public id: number | null;
+  public gift_card_id: string | null;
+  public id: string | null;
   public note: string | null;
   public number: number | null;
-  public order_transaction_id: number | null;
+  public order_transaction_id: string | null;
   public processed_at: string | null;
   public remote_transaction_ref: string | null;
   public remote_transaction_url: string | null;
-  public user_id: number | null;
+  public user_id: string | null;
 }

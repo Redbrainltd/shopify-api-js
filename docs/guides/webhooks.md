@@ -1,41 +1,27 @@
-# Setting up webhooks
+# Setting up shop-specific webhooks
 
-If your app needs to keep track of specific events happening on a shop, you can use [Shopify webhooks](https://shopify.dev/docs/apps/webhooks) to subscribe to those events.
+We recommend using [app-specific webhooks](https://shopify.dev/docs/apps/build/webhooks/subscribe#app-specific-subscriptions).  App-specific webhooks can be configured in the [shopify.app.toml](https://shopify.dev/docs/apps/build/webhooks/subscribe/get-started?framework=remix&deliveryMethod=https#set-your-app-up-to-receive-webhooks-using-https-delivery) and do not require the methods in this documentation.
 
-To do that, you'll need to perform the following steps:
+If your app requires different webhooks subscriptions per shop, you can use this documentation to get started.  But in many cases, the extra complexity is not needed.
+
+To configure shop-specific webhooks, perform the following steps:
 
 1. Set up your webhook handlers by calling [shopify.webhooks.addHandlers](../reference/webhooks/addHandlers.md).
 1. Register your handlers with Shopify after the app is installed by calling [shopify.webhooks.register](../reference/webhooks/register.md).
-1. Process incoming events by setting up an endpoint that calls [shopfiy.webhooks.process](../reference/webhooks/process.md).
+1. Process incoming events by doing **ONE** of the following:
+   1. setting up an endpoint that calls [shopfiy.webhooks.validate](../reference/webhooks/validate.md).
+   1. setting up an endpoint that calls [shopfiy.webhooks.process](../reference/webhooks/process.md).
 
-Below is a simplified example of what the combination of these steps looks like in practice:
+Below is an example of how to register shop-specific webhooks after OAuth completes:
 
 ```ts
 const shopify = shopifyApi({
   /* ... */
 });
 
-const handleWebhookRequest = async (
-  topic: string,
-  shop: string,
-  webhookRequestBody: string,
-  webhookId: string,
-  apiVersion: string,
-) => {
-  const sessionId = shopify.session.getOfflineId({shop});
+// Call shopify.webhooks.addHandlers here (see examples below)
 
-  // Fetch the session from storage and process the webhook event
-};
-
-await shopify.webhooks.addHandlers({
-  PRODUCTS_CREATE: [
-    {
-      deliveryMethod: DeliveryMethod.Http,
-      callbackUrl: '/webhooks',
-      callback: handleWebhookRequest,
-    },
-  ],
-});
+## Node.js
 
 const app = express();
 
@@ -62,6 +48,65 @@ app.get('/auth/callback', async (req, res) => {
 
   return res.redirect('/'); // or wherever you want your user to end up after OAuth completes
 });
+```
+
+You can use `validate` to process your webhooks.  This applies to both app-specific and shop-specific webhooks:
+
+```ts
+// Add handlers for the events you want to subscribe to. You don't need a callback if you're just using `validate`
+shopify.webhooks.addHandlers({
+  PRODUCTS_CREATE: [
+    {deliveryMethod: DeliveryMethod.Http, callbackUrl: '/webhooks'},
+  ],
+});
+
+// Handle webhooks
+app.post('/webhooks', express.text({type: '*/*'}), async (req, res) => {
+  const {valid, topic, domain} = await shopify.webhooks.validate({
+    rawBody: req.body, // is a string
+    rawRequest: req,
+    rawResponse: res,
+  });
+
+  if (!valid) {
+    console.error('Invalid webhook call, not handling it');
+    res.send(400); // Bad Request
+  }
+
+  console.log(`Received webhook for ${topic} for shop ${domain}`);
+
+  const sessionId = shopify.session.getOfflineId(domain);
+
+  // Run your webhook-processing code here!
+});
+```
+
+**OR**, you can pass in a `callback` in your handler configuration, and call `process`:
+
+```ts
+const handleWebhookRequest = async (
+  topic: string,
+  shop: string,
+  webhookRequestBody: string,
+  webhookId: string,
+  apiVersion: string,
+  context?: any,
+) => {
+  const sessionId = shopify.session.getOfflineId(shop);
+
+  // Run your webhook-processing code here!
+};
+
+// Add handlers for the events you want to subscribe to. You **MUST** set a callback function when calling `process`
+shopify.webhooks.addHandlers({
+  PRODUCTS_CREATE: [
+    {
+      deliveryMethod: DeliveryMethod.Http,
+      callbackUrl: '/webhooks',
+      callback: handleWebhookRequest,
+    },
+  ],
+});
 
 // Process webhooks
 app.post('/webhooks', express.text({type: '*/*'}), async (req, res) => {
@@ -77,6 +122,28 @@ app.post('/webhooks', express.text({type: '*/*'}), async (req, res) => {
     console.log(error.message);
   }
 });
+```
+
+## Cloudflare workers
+
+// Register webhooks after OAuth completes
+
+```ts
+async function handleFetch(
+  request: Request,
+  env: unknown,
+  context: any,
+): Promise<Response> {
+  try {
+    await shopify.webhooks.process({
+      context: {env, ...context}, // is object or undefined
+      rawBody: await request.text(), // is a string
+      rawRequest: request,
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+}
 ```
 
 ## Note regarding use of body parsers
@@ -96,3 +163,13 @@ await shopify.webhooks.process({
 ```
 
 [Back to guide index](../../README.md#guides)
+
+## Gotchas
+
+### Admin created webhook failing HMAC validation
+
+Webhooks subscriptions created in the [Shopify admin](https://help.shopify.com/en/manual/orders/notifications/webhooks) will fail HMAC validation. This is because the webhook payload is not signed with your app's secret key.
+
+Create webhook subscriptions using the `shopify.webhooks.register` method instead.
+
+Test your webhooks with the [Shopify CLI](https://shopify.dev/docs/apps/tools/cli/commands#webhook-trigger) or by triggering events manually in the Shopify admin(e.g. Updating the product title to trigger a `PRODUCTS_UPDATE`).

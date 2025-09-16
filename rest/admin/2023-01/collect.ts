@@ -2,8 +2,8 @@
 * This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
 ***********************************************************************************************************************/
 
-import {Base} from '../../base';
-import {ResourcePath} from '../../types';
+import {Base, FindAllResponse} from '../../base';
+import {ResourcePath, ResourceNames} from '../../types';
 import {Session} from '../../../lib/session/session';
 import {ApiVersion} from '../../../lib/types';
 
@@ -29,18 +29,22 @@ interface CountArgs {
 }
 
 export class Collect extends Base {
-  public static API_VERSION = ApiVersion.January23;
+  public static apiVersion = ApiVersion.January23;
 
-  protected static NAME = 'collect';
-  protected static PLURAL_NAME = 'collects';
-  protected static HAS_ONE: {[key: string]: typeof Base} = {};
-  protected static HAS_MANY: {[key: string]: typeof Base} = {};
-  protected static PATHS: ResourcePath[] = [
+  protected static hasOne: {[key: string]: typeof Base} = {};
+  protected static hasMany: {[key: string]: typeof Base} = {};
+  protected static paths: ResourcePath[] = [
     {"http_method": "delete", "operation": "delete", "ids": ["id"], "path": "collects/<id>.json"},
     {"http_method": "get", "operation": "count", "ids": [], "path": "collects/count.json"},
     {"http_method": "get", "operation": "get", "ids": [], "path": "collects.json"},
     {"http_method": "get", "operation": "get", "ids": ["id"], "path": "collects/<id>.json"},
     {"http_method": "post", "operation": "post", "ids": [], "path": "collects.json"}
+  ];
+  protected static resourceNames: ResourceNames[] = [
+    {
+      "singular": "collect",
+      "plural": "collects"
+    }
   ];
 
   public static async find(
@@ -52,10 +56,11 @@ export class Collect extends Base {
   ): Promise<Collect | null> {
     const result = await this.baseFind<Collect>({
       session: session,
+      requireIds: true,
       urlIds: {"id": id},
       params: {"fields": fields},
     });
-    return result ? result[0] : null;
+    return result.data ? result.data[0] : null;
   }
 
   public static async delete(
@@ -83,7 +88,7 @@ export class Collect extends Base {
       fields = null,
       ...otherArgs
     }: AllArgs
-  ): Promise<Collect[]> {
+  ): Promise<FindAllResponse<Collect>> {
     const response = await this.baseFind<Collect>({
       session: session,
       urlIds: {},
@@ -112,11 +117,11 @@ export class Collect extends Base {
     return response ? response.body : null;
   }
 
-  public collection_id: number | null;
+  public collection_id: string | null;
   public created_at: string | null;
-  public id: number | null;
+  public id: string | null;
   public position: number | null;
-  public product_id: number | null;
+  public product_id: string | null;
   public sort_value: string | null;
   public updated_at: string | null;
 }

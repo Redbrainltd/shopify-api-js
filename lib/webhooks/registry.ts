@@ -14,23 +14,23 @@ export function registry(): WebhookRegistry {
 }
 
 export function topicForStorage(topic: string): string {
-  return topic.toUpperCase().replace(/\//g, '_');
+  return topic.toUpperCase().replace(/\/|\./g, '_');
 }
 
 export function addHandlers(
   config: ConfigInterface,
   webhookRegistry: WebhookRegistry,
 ) {
-  return async function addHandlers(handlersToAdd: AddHandlersParams) {
+  return function addHandlers(handlersToAdd: AddHandlersParams) {
     for (const [topic, handlers] of Object.entries(handlersToAdd)) {
       const topicKey = topicForStorage(topic);
 
       if (Array.isArray(handlers)) {
         for (const handler of handlers) {
-          await mergeOrAddHandler(config, webhookRegistry, topicKey, handler);
+          mergeOrAddHandler(config, webhookRegistry, topicKey, handler);
         }
       } else {
-        await mergeOrAddHandler(config, webhookRegistry, topicKey, handlers);
+        mergeOrAddHandler(config, webhookRegistry, topicKey, handlers);
       }
     }
   };
@@ -79,17 +79,16 @@ export function addHostToCallbackUrl(
   }
 }
 
-async function mergeOrAddHandler(
+function mergeOrAddHandler(
   config: ConfigInterface,
   webhookRegistry: WebhookRegistry,
   topic: string,
   handler: WebhookHandler,
 ) {
+  const log = logger(config);
+
   handler.includeFields?.sort();
   handler.metafieldNamespaces?.sort();
-  if (handler.deliveryMethod === DeliveryMethod.Http) {
-    handler.privateMetafieldNamespaces?.sort();
-  }
 
   if (!(topic in webhookRegistry)) {
     webhookRegistry[topic] = [handler];
@@ -111,13 +110,13 @@ async function mergeOrAddHandler(
     }
 
     if (handler.deliveryMethod === DeliveryMethod.Http) {
-      await logger(config).info(
+      log.info(
         `Detected multiple handlers for '${topic}', webhooks.process will call them sequentially`,
       );
       break;
     } else {
       throw new InvalidDeliveryMethodError(
-        `Can only add multiple handlers when deliveryMethod is Http. Invalid handler: ${JSON.stringify(
+        `Can only add multiple handlers for a topic when deliveryMethod is Http. Please be sure that you used addHandler method once after creating ShopifyApi instance in your app.  Invalid handler: ${JSON.stringify(
           handler,
         )}`,
       );
